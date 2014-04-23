@@ -1,0 +1,26 @@
+language: scala
+scala:
+  - 2.10.4
+
+jdk:
+  - openjdk7
+
+notifications:
+  email:
+    - otrimegistro@gmail.com
+
+before_script:
+  - sudo /etc/init.d/aerospike start
+
+script: "sbt test"
+
+after_script:
+  - sudo /etc/init.d/aerospike stop
+
+before_install:
+  - wget http://www.aerospike.com/community_downloads/3.2.3/aerospike-community-server-3.2.3-ubuntu12.04.tgz
+  - tar xf aerospike-community-server-3.2.3-ubuntu12.04.tgz && rm aerospike-community-server-3.2.3-ubuntu12.04.tgz -f
+  - cd aerospike-community-server-3.2.3-ubuntu12.04/
+  - sudo dpkg -i aerospike-community-server-3.2.3.ubuntu12.04.x86_64.deb
+  - cd ../ && rm aerospike-community-server-3.2.3-ubuntu12.04/ -rf
+  - sudo sed -i s/"pidfile \/var\/run\/aerospike\/asd.pid"/"pidfile \/var\/run\/asd.pid"/g /etc/aerospike/aerospike.conf

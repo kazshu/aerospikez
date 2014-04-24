@@ -18,6 +18,11 @@ script: "sbt test"
 after_script:
   - sudo /etc/init.d/aerospike stop
 
+after_failure:
+  - sudo uname -a
+  - sudo cat /etc/aerospike/aerospike.conf
+  - sudo cat /var/log/aerospike/aerospike.log
+
 before_install:
   - wget http://www.aerospike.com/community_downloads/3.2.3/aerospike-community-server-3.2.3-ubuntu12.04.tgz
   - tar xf aerospike-community-server-3.2.3-ubuntu12.04.tgz && rm aerospike-community-server-3.2.3-ubuntu12.04.tgz -f

@@ -32,3 +32,4 @@ before_install:
   - sudo dpkg -i aerospike-community-server-3.2.3.ubuntu12.04.x86_64.deb
   - cd ../ && rm aerospike-community-server-3.2.3-ubuntu12.04/ -rf
   - sudo sed -i s/"pidfile \/var\/run\/aerospike\/asd.pid"/"pidfile \/var\/run\/asd.pid"/g /etc/aerospike/aerospike.conf
+  - sudo sed -i '/reuse-address/a network-interface-name venet0' /etc/aerospike/aerospike.conf

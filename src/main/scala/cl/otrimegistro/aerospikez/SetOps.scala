@@ -1,6 +1,7 @@
 package cl.otrimegistro.aerospikez
 
-import com.aerospike.client.listener.{ RecordArrayListener, ExistsArrayListener, DeleteListener, WriteListener, RecordListener, ExistsListener }
+import com.aerospike.client.listener.{ RecordArrayListener, ExistsArrayListener, DeleteListener }
+import com.aerospike.client.listener.{ WriteListener, RecordListener, ExistsListener }
 import com.aerospike.client.{ AerospikeException, Record, Host, Key, Bin }
 import com.aerospike.client.policy.{ QueryPolicy, WritePolicy, Policy }
 import com.aerospike.client.async.AsyncClient
@@ -44,7 +45,10 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               case `length` ⇒ Trampoline.done(m)
               case _ ⇒ Trampoline.suspend(getMap({
                 if (keys(i) != null && (records(i) != null && records(i).bins != null)) {
-                  m.put(keys(i).userKey.asInstanceOf[K], records(i).bins.toOpenHashMap().run.asInstanceOf[OpenHashMap[String, V]])
+                  m.put(
+                    keys(i).userKey.asInstanceOf[K],
+                    records(i).bins.toOpenHashMap().run.asInstanceOf[OpenHashMap[String, V]]
+                  )
                 }; m
               }, i + 1))
             }
@@ -63,16 +67,17 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
             val length = keys.length
 
-            def getMap(m: OpenHashMap[K, V] = OpenHashMap.empty[K, V], i: Int = 0): Trampoline[OpenHashMap[K, V]] = i match {
-              case `length` ⇒ Trampoline.done(m)
-              case _ ⇒ Trampoline.suspend(getMap({
-                if (records(i) != null && records(i).bins != null) {
-                  records(i).bins.toOpenHashMap().run.get(bin).map { userValue ⇒
-                    m.put(keys(i).userKey.asInstanceOf[K], userValue.asInstanceOf[V])
-                  }
-                }; m
-              }, i + 1))
-            }
+            def getMap(m: OpenHashMap[K, V] = OpenHashMap.empty[K, V], i: Int = 0): Trampoline[OpenHashMap[K, V]] =
+              i match {
+                case `length` ⇒ Trampoline.done(m)
+                case _ ⇒ Trampoline.suspend(getMap({
+                  if (records(i) != null && records(i).bins != null) {
+                    records(i).bins.toOpenHashMap().run.get(bin).map { userValue ⇒
+                      m.put(keys(i).userKey.asInstanceOf[K], userValue.asInstanceOf[V])
+                    }
+                  }; m
+                }, i + 1))
+              }
 
             register(\/-(getMap().run))
           }
@@ -111,6 +116,36 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           }
           def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
         }, key)
+    }
+  }
+
+  private[aerospikez] def delete(policy: WritePolicy, key: Key): Task[Unit] = {
+    Task.async { register ⇒
+      client.delete(policy,
+        new DeleteListener {
+          def onSuccess(key: Key, existed: Boolean): Unit = register(\/-(()))
+          def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
+        }, key)
+    }
+  }
+
+  private[aerospikez] def append(policy: WritePolicy, key: Key, value: String, bin: String): Task[Unit] = {
+    Task.async { register ⇒
+      client.append(policy,
+        new WriteListener {
+          def onSuccess(k: Key): Unit = register(\/-(()))
+          def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
+        }, key, new Bin(bin, value))
+    }
+  }
+
+  private[aerospikez] def prepend(policy: WritePolicy, key: Key, value: String, bin: String): Task[Unit] = {
+    Task.async { register ⇒
+      client.prepend(policy,
+        new WriteListener {
+          def onSuccess(k: Key): Unit = register(\/-(()))
+          def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
+        }, key, new Bin(bin, value))
     }
   }
 }

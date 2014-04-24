@@ -56,4 +56,16 @@ private[aerospikez] class SetOf(namespace: Namespace, setName: String, client: A
   def get[K: ClassTag, V](keys: Array[K], bins: Array[String]): Task[OpenHashMap[K, OpenHashMap[String, V]]] = {
     setOp.get[K, V](queryPolicy, keys.map(getKey[K](_)), bins)
   }
+
+  def delete[K](key: K): Task[Unit] = {
+    setOp.delete(writePolicy, getKey[K](key))
+  }
+
+  def append[K](key: K, value: String, bin: String = ""): Task[Unit] = {
+    setOp.append(writePolicy, getKey[K](key), value, bin)
+  }
+
+  def prepend[K](key: K, value: String, bin: String = ""): Task[Unit] = {
+    setOp.prepend(writePolicy, getKey[K](key), value, bin)
+  }
 }

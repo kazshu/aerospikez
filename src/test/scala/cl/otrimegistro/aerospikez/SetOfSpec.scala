@@ -10,39 +10,133 @@ class SetOfSpec extends Specification with MapMatchers {
 
   val myset = SetOf(Namespace("test"))
 
-  "myset.put(<a key>, <a value>).run" should {
+  "put(<a key>, <a value>)" should {
 
-    "work (return Unit if the write are success)" in {
+    "save the value in an empty bin name (\"\") into the specified record/key (return Unit if the write are success)" in {
 
-      // this also help to test: myset.get(<a key>).run
+      // this also help to test: get(<a key>)
       myset.put("key", "value").run must beEqualTo(())
 
-      // this also help to test: myset.get(Keys(<one or more key>)).run
+      // this also help to test: get(Keys(<one or more key>))
       myset.put("key1", "value1").run must beEqualTo(())
       myset.put("key2", "value2").run must beEqualTo(())
     }
   }
 
-  "myset.put(<a key>, <a value>, <a bin>).run" should {
+  "put(<a key>, <a value>, <a bin>)" should {
 
-    "work (return Unit if the write are success)" in {
+    "save the value in the specified bin, record/key into record/key (return Unit if the write are success)" in {
 
-      // this also help to test: myset.get("key", "bin").run
+      // this also help to test: get("key", "bin")
       myset.put("key", "value", "bin").run must beEqualTo(())
 
-      // this also help to test: myset.get(<a key>, Bins(<one or more bin>)).run
+      // this also help to test: get(<a key>, Bins(<one or more bin>))
       myset.put("number", 1, "one").run must beEqualTo(())
       myset.put("number", 2, "two").run must beEqualTo(())
       myset.put("number", 3, "three").run must beEqualTo(())
 
-      // this also help to test: myset.get(Keys(<one or more key>), <a bin>)).run
+      // this also help to test: get(Keys(<one or more key>), <a bin>))
       myset.put("key4", "value4", "bin").run must beEqualTo(())
       myset.put("key5", "value5", "bin").run must beEqualTo(())
       myset.put("key6", "value6", "bin").run must beEqualTo(())
     }
   }
 
-  "myset.get(Keys(<one or more key>), Bins(<one or more bin>)).run" should {
+  "get(<a key>)" should {
+
+    "return a Some(<a value>) is the key exists" in {
+
+      myset.get("key").run must beSome("value")
+    }
+
+    "return a None if the key not exists" in {
+
+      myset.get("nonExistentKey").run must beNone
+    }
+  }
+
+  "get(<a key>, <a bin>)" should {
+
+    "return a Some(<a value> is the key and bin exists" in {
+
+      myset.get("key", "bin").run must beEqualTo(Some("value"))
+    }
+
+    "return None if the key or/and bin not exists" in {
+
+      myset.get("key", "nonExistentBin").run must beEqualTo(None)
+      myset.get("nonExistentKey", "bin").run must beEqualTo(None)
+      myset.get("nonExistentKey", "nonExistentBins").run must beEqualTo(None)
+    }
+  }
+
+  "get(Keys(<one or more key>)" should {
+
+    "return a OpenHashMap with only the values that exists in that records/keys" in {
+
+      val m1 = myset.get(Keys("key1", "key2")).run
+
+      m1 must havePairs(("key1", "value1"), ("key2", "value2"))
+
+      val m2 = myset.get(Keys("key1", "nonExistentKey")).run
+
+      m2 must havePair(("key1", "value1"))
+      m2 must not haveKey ("nonExistentKey")
+    }
+
+    "return a empty OpenHashMap if all keys not exists" in {
+
+      myset.get(Keys("nonExistentKey1", "nonExistentKey2")).run must beEqualTo(OpenHashMap.empty)
+    }
+  }
+
+  "get(Keys(<one or more key>), <a bin>)" should {
+
+    "return a OpenHashMap with only the values that exists in the specified bin of that keys" in {
+
+      val m1 = myset.get(Keys("key4", "key5", "key6"), "bin").run
+      m1 must havePairs(("key4", "value4"), ("key5", "value5"), ("key6", "value6"))
+
+      val m2 = myset.get(Keys("nonExistentKey", "key4", "key5"), "bin").run
+      m2 must havePairs(("key4", "value4"), ("key5", "value5"))
+      m2 must not haveKey ("nonExistenKey")
+    }
+
+    "return a empty OpenHashMap if the keys or bin or none exists" in {
+
+      myset.get(Keys("nonExistentKey"), "bin2").run must beEqualTo(OpenHashMap.empty)
+
+      myset.get(Keys("key2"), "nonExistentBin").run must beEqualTo(OpenHashMap.empty)
+
+      myset.get(Keys("nonExistentKey"), "nonExistentBin").run must beEqualTo(OpenHashMap.empty)
+    }
+  }
+
+  "get(key, Bins(<one or more bin>))" should {
+
+    "return a OpenHashMap with only the values that exists in that keys with specified bins" in {
+
+      val m1 = myset.get("number", Bins("one", "two", "three")).run
+
+      m1 must havePairs(("one", 1), ("two", 2), ("three", 3))
+
+      val m2 = myset.get("number", Bins("two", "nonExistentBin")).run
+
+      m2 must havePair(("two", 2))
+      m2 must not haveKey ("nonExistenBin")
+    }
+
+    "return a empty OpenHashMap if the key or bins or none exists" in {
+
+      myset.get("nonExistentKey", Bins("one", "two")).run must beEqualTo(OpenHashMap.empty)
+
+      myset.get("number", Bins("nonExistentBin")).run must beEqualTo(OpenHashMap.empty)
+
+      myset.get("nonExistentKey", Bins("nonExistentBin")).run must beEqualTo(OpenHashMap.empty)
+    }
+  }
+
+  "get(Keys(<one or more key>), Bins(<one or more bin>))" should {
 
     "return a OpenHashMap with an OpenHashMap as value (this contain the bin/value)" in {
 
@@ -82,97 +176,88 @@ class SetOfSpec extends Specification with MapMatchers {
     }
   }
 
-  "myset.get(<a key>).run" should {
+  "delete(<key>)" should {
 
-    "return a Some(<a value>) is the key exists" in {
+    "remove a existing record/key" in {
 
-      myset.get("key").run must beSome("value")
+      myset.get("key").run must beSome
+      myset.delete("key").run must beEqualTo(())
+      myset.get("key").run must beNone
     }
 
-    "return a None if the key not exists" in {
+    "do nothing if the record/key not exists" in {
 
-      myset.get("nonExistentKey").run must beNone
-    }
-  }
-
-  "myset.get(<a key>, <a bin>).run" should {
-
-    "return a Some(<a value> is the key and bin exists" in {
-
-      myset.get("key", "bin").run must beEqualTo(Some("value"))
-    }
-
-    "return None if the key or/and bin not exists" in {
-
-      myset.get("key", "nonExistentBin").run must beEqualTo(None)
-      myset.get("nonExistentKey", "bin").run must beEqualTo(None)
-      myset.get("nonExistentKey", "nonExistentBins").run must beEqualTo(None)
+      myset.get("key").run must beNone
+      myset.delete("key").run must beEqualTo(())
+      myset.get("key").run must beNone
     }
   }
 
-  "myset.get(Keys(<one or more key>).run" should {
+  "append(<a key>, <new string value>)" should {
 
-    "return a OpenHashMap with only the values that exists in that records/keys" in {
+    "concatenate the exists string value with the new string value (add after)" in {
 
-      val m1 = myset.get(Keys("key1", "key2")).run
-
-      m1 must havePairs(("key1", "value1"), ("key2", "value2"))
-
-      val m2 = myset.get(Keys("key1", "nonExistentKey")).run
-
-      m2 must havePair(("key1", "value1"))
-      m2 must not haveKey ("nonExistentKey")
+      myset.put("key", "value").run
+      myset.append("key", " new value").run must beEqualTo(())
+      myset.get("key").run must beSome("value new value")
     }
 
-    "return a empty OpenHashMap if all keys not exists" in {
+    "add the string value if none value exists in that record/key" in {
 
-      myset.get(Keys("nonExistentKey1", "nonExistentKey2")).run must beEqualTo(OpenHashMap.empty)
+      myset.delete("key").run
+      myset.append("key", " new value").run must beEqualTo(())
+      myset.get("key").run must beSome(" new value")
     }
   }
 
-  "myset.get(Keys(<one or more key>), <a bin>).run" should {
+  "append(<a key>, <new string value>, <a bin>)" should {
 
-    "return a OpenHashMap with only the values that exists in the specified bin of that keys" in {
+    "concatenate the exists string value with the new string value (add after)" in {
 
-      val m1 = myset.get(Keys("key4", "key5", "key6"), "bin").run
-      m1 must havePairs(("key4", "value4"), ("key5", "value5"), ("key6", "value6"))
-
-      val m2 = myset.get(Keys("nonExistentKey", "key4", "key5"), "bin").run
-      m2 must havePairs(("key4", "value4"), ("key5", "value5"))
-      m2 must not haveKey ("nonExistenKey")
+      myset.put("key", "value", "bin").run
+      myset.append("key", " new value", "bin").run must beEqualTo(())
+      myset.get("key", "bin").run must beSome("value new value")
     }
 
-    "return a empty OpenHashMap if the keys or bin or none exists" in {
+    "add the string value if none value exists in the bin from that record" in {
 
-      myset.get(Keys("nonExistentKey"), "bin2").run must beEqualTo(OpenHashMap.empty)
-
-      myset.get(Keys("key2"), "nonExistentBin").run must beEqualTo(OpenHashMap.empty)
-
-      myset.get(Keys("nonExistentKey"), "nonExistentBin").run must beEqualTo(OpenHashMap.empty)
+      myset.delete("key").run
+      myset.append("key", " new value", "bin").run must beEqualTo(())
+      myset.get("key", "bin").run must beSome(" new value")
     }
   }
 
-  "myset.get(key, Bins(<one or more bin>)).run" should {
+  "prepend(<a key>, <new string value>)" should {
 
-    "return a OpenHashMap with only the values that exists in that keys with specified bins" in {
+    "concatenate the new string value (add before) with the exists string value" in {
 
-      val m1 = myset.get("number", Bins("one", "two", "three")).run
-
-      m1 must havePairs(("one", 1), ("two", 2), ("three", 3))
-
-      val m2 = myset.get("number", Bins("two", "nonExistentBin")).run
-
-      m2 must havePair(("two", 2))
-      m2 must not haveKey ("nonExistenBin")
+      myset.put("key", "value").run
+      myset.prepend("key", "new value ").run must beEqualTo(())
+      myset.get("key").run must beSome("new value value")
     }
 
-    "return a empty OpenHashMap if the key or bins or none exists" in {
+    "add the string value if none value exists in that record/key" in {
 
-      myset.get("nonExistentKey", Bins("one", "two")).run must beEqualTo(OpenHashMap.empty)
+      myset.delete("key").run
+      myset.prepend("key", "new value ").run must beEqualTo(())
+      myset.get("key").run must beSome("new value ")
+    }
+  }
 
-      myset.get("number", Bins("nonExistentBin")).run must beEqualTo(OpenHashMap.empty)
+  "prepend(<a key>, <new string value>, <a bin>)" should {
 
-      myset.get("nonExistentKey", Bins("nonExistentBin")).run must beEqualTo(OpenHashMap.empty)
+    "concatenate the new string value (add before) with the exists string value" in {
+
+      myset.put("key", "value", "bin").run
+      myset.prepend("key", "new value ", "bin").run must beEqualTo(())
+      myset.get("key", "bin").run must beSome("new value value")
+    }
+
+    "add the string value if none value exists in the bin from that record" in {
+
+      myset.delete("key").run
+      myset.prepend("key", "new value ", "bin").run must beEqualTo(())
+      myset.get("key", "bin").run must beSome("new value ")
     }
   }
 }

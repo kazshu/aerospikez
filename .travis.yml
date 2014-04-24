@@ -11,6 +11,7 @@ notifications:
 
 before_script:
   - sudo /etc/init.d/aerospike start
+  - sudo /etc/init.d/aerospike status
 
 script: "sbt test"
 

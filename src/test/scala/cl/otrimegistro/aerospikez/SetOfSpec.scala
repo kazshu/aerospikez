@@ -10,7 +10,11 @@ import scala.collection.mutable.OpenHashMap
 class SetOfSpec extends Specification with MapMatchers {
   sequential
 
-  val set = SetOf(Namespace("test"))
+  def afterTests = { client.close }
+
+  val client = Aerospikez()
+
+  val set = client.setOf(Namespace("test"))
 
   "put(<a key>, <a value>)" should {
 
@@ -41,6 +45,28 @@ class SetOfSpec extends Specification with MapMatchers {
       set.put("key4", "value4", "bin").run must beEqualTo(())
       set.put("key5", "value5", "bin").run must beEqualTo(())
       set.put("key6", "value6", "bin").run must beEqualTo(())
+    }
+  }
+
+  "putG(<a key>, <a value>)" should {
+
+    "save the value in the specified record/key and return the old value (None if empty)" in {
+
+      set.delete("name").run
+      set.putG("name", "Omar").run must beNone
+      set.putG("name", "Anibal").run must beSome("Omar")
+    }
+  }
+
+  "putG(<a key>, <a value>, <a bin>)" should {
+
+    "save the value in the specified bin into the record/key and return the old value (None if empty)" in {
+
+      val last_user = 123056778
+
+      set.delete(last_user).run
+      set.putG(last_user, "Omar", "name").run must beNone
+      set.putG(last_user, "Anibal", "name").run must beSome("Omar")
     }
   }
 
@@ -333,4 +359,6 @@ class SetOfSpec extends Specification with MapMatchers {
       )
     }
   }
+
+  step(afterTests)
 }

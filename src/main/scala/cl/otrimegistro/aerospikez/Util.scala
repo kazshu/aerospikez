@@ -1,13 +1,13 @@
 package cl.otrimegistro.aerospikez
 
 import scala.collection.mutable.OpenHashMap
-import scalaz.{ LazyOption, Trampoline }
-import scalaz.Free.Trampoline
-import java.{ util ⇒ ju }
-import LazyOption._
-import scala.reflect.ClassTag
 
-object Util {
+import scalaz.Free.Trampoline
+import scalaz.Trampoline
+
+import java.{ util ⇒ ju }
+
+private[aerospikez] object Util {
 
   def trySome[A](a: ⇒ A): Option[A] = {
     try {
@@ -21,9 +21,6 @@ object Util {
 
     def toOption: Option[A] =
       if (self != null) Some(self) else None
-
-    def toLazyOption: LazyOption[A] =
-      if (self != null) lazySome(self) else lazyNone[A]
   }
 
   implicit def pimpAny[A](a: A) = new PimpAny(a)
@@ -48,16 +45,13 @@ object Util {
 
   implicit def pimpJavaMap[K, V](coll: java.util.Map[K, V]): PimpJavaMap[K, V] = new PimpJavaMap[K, V](coll)
 
-  @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Type for Key, and you provide a ${T1}!")
-  sealed class DefaultKeyTo[T1, T2]
-  trait KeySupportTypes {
-    implicit def supportInt[T1, T2](implicit ev: T1 =:= Int) = new DefaultKeyTo[T1, T2]
-    implicit def supportLong[T1, T2](implicit ev: T1 =:= Long) = new DefaultKeyTo[T1, T2]
-    implicit def supportString[T1, T2](implicit ev: T1 =:= String) = new DefaultKeyTo[T1, T2]
-    implicit def supportArrayofByte[T1, T2](implicit ev: T1 =:= Array[Byte]) = new DefaultKeyTo[T1, T2]
-  }
-  object DefaultKeyTo extends KeySupportTypes {
-    implicit def default[T2] = new DefaultKeyTo[T2, T2]
+  @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Type for Key, and you provide a ${K}!")
+  trait SupportKey[K]
+  object SupportKey {
+    implicit object string extends SupportKey[Int]
+    implicit object int extends SupportKey[String]
+    implicit object long extends SupportKey[Long]
+    implicit object arraybyte extends SupportKey[Array[Byte]]
   }
 
   sealed class DefaultValueTo[T1, T2]

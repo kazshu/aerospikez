@@ -6,7 +6,7 @@ import com.aerospike.client.async.AsyncClient
 import com.aerospike.client.Host
 
 import scalaz.NonEmptyList
-import Util.trySome
+import Util._
 
 object Aerospikez {
 
@@ -21,13 +21,20 @@ object Aerospikez {
 }
 
 private[aerospikez] class Aerospikez(hosts: NonEmptyList[String], clientConfig: ClientConfig, configFile: Config) {
+  self ⇒
 
-  private[aerospikez] final lazy val async = {
-    new AsyncClient(
-      clientConfig.getPolicy(),
-      getHosts(configFile, hosts).map { createHost(_, getPort(configFile)) }.list: _*
-    )
+  def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
+    implicit ev: V DefaultValueTo Any): SetOf[V] = {
+
+    new SetOf[V](namespace, name, self.async)
   }
+
+  private[aerospikez] final val async = new AsyncClient(
+    clientConfig.getPolicy(),
+    getHosts(configFile, hosts).map { createHost(_, getPort(configFile)) }.list: _*
+  )
+
+  def close = async.close()
 
   private[aerospikez] def getHosts(configFile: Config, hosts: NonEmptyList[String]): NonEmptyList[String] = {
     import scala.collection.JavaConversions.asScalaBuffer

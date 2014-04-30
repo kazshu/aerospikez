@@ -30,10 +30,10 @@ class AerospikezSpec extends Specification {
 
     "received a optional hosts list, client config and config file" in {
 
-      Aerospikez.apply()
-      Aerospikez.apply(Hosts("127.0.0.1:3000"))
-      Aerospikez.apply(Hosts("127.0.0.1:3000"), ClientConfig())
-      Aerospikez.apply(Hosts("127.0.0.1:3000"), ClientConfig(), goodConfigFile)
+      Aerospikez()
+      Aerospikez(Hosts("127.0.0.1:3000"))
+      Aerospikez(Hosts("127.0.0.1:3000"), ClientConfig())
+      Aerospikez(Hosts("127.0.0.1:3000"), ClientConfig(), badConfigFile)
 
       // because the previos expresions will try to connect to the aeroskipe
       // server, if not exception are throw then everything is correct:

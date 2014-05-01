@@ -48,8 +48,8 @@ private[aerospikez] object Util {
   @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Type for Key, and you provide a ${K}!")
   trait SupportKey[K]
   object SupportKey {
-    implicit object string extends SupportKey[Int]
-    implicit object int extends SupportKey[String]
+    implicit object string extends SupportKey[String]
+    implicit object int extends SupportKey[Int]
     implicit object long extends SupportKey[Long]
     implicit object arraybyte extends SupportKey[Array[Byte]]
   }

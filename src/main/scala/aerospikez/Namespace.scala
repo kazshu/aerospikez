@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 case class Namespace(name: String = "test",
                      queryConfig: QueryConfig = QueryConfig(),

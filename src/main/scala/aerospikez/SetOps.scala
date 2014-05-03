@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import com.aerospike.client.listener.{ RecordArrayListener, ExistsArrayListener, DeleteListener }
 import com.aerospike.client.listener.{ WriteListener, RecordListener, ExistsListener }

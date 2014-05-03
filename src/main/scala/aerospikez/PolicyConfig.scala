@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import com.aerospike.client.policy.{ RecordExistsAction, GenerationPolicy, WritePolicy, QueryPolicy, Priority }
 import com.aerospike.client.async.{ MaxCommandAction, AsyncClientPolicy }

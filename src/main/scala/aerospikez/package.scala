@@ -1,5 +1,3 @@
-package cl.otrimegistro
-
 import scala.reflect.ClassTag
 import scalaz.NonEmptyList
 

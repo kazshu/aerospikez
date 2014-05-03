@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import com.aerospike.client.async.AsyncClient
 import com.aerospike.client.policy.Policy

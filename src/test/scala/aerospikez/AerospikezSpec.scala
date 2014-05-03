@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import org.specs2.mutable.Specification
 

@@ -1,5 +1,6 @@
 language: scala
 scala:
+  - 2.10.4
   - 2.11.0
 
 jdk:
@@ -13,14 +14,23 @@ before_script:
   - sudo /etc/init.d/aerospike start
   - sudo /etc/init.d/aerospike status
 
-script: "sbt test"
+script: sbt ++${TRAVIS_SCALA_VERSION} test
 
 after_script:
   - sudo /etc/init.d/aerospike stop
 
+after_success:
+  - if [[ "${PUBLISH_ENABLED}" == "true" && "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" ]]; then sbt ++${TRAVIS_SCALA_VERSION} publish; fi
+
 after_failure:
   - sudo cat /etc/aerospike/aerospike.conf
   - sudo cat /var/log/aerospike/aerospike.log
+
+env:
+  global:
+    - PUBLISH_ENABLED = true
+    - secure: "Nph15Ef9UWS/Wnpiivd/1xWjxyeVTrvsPdAeFP85yJLOvZnxTLarM9QS31YghNDnLrV0oOpe65BYNKpYb26zCAzKEQQrBBIftQUTvgnqvdKsHre+/MLJE9cdWeiWTldSSuZAAwQIt9ikqnGrfsAp3ltldh3CARGyKOBh4G59qIo="
+    - secure: "I3QQPyVIPwHuxbDhIke51iZ4z6VnEFoRmElPcY7DpHbX84jUDDLRwincdzoTn6oyA2bpjdlgKIYqNnd1OYh90w4lo6C30ORQelQG9wMI0jxLbRZ7zsyMFFIqVbiFt9KM62GGPRPXhH1nO2SqIw962NOE+skgJnXiiibH41/SkVg="
 
 before_install:
   - wget http://www.aerospike.com/community_downloads/3.2.3/aerospike-community-server-3.2.3-ubuntu12.04.tgz

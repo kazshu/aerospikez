@@ -1,16 +1,31 @@
 import scalariform.formatter.preferences._
+import scala.util.Properties
+
+// Project Info //
 
 name := "aerospikez"
 
-organization := "cl.otrimegistro.aerospikez"
+description := "Aerospike v3 Scala Client"
 
-startYear := Some(2014)
+organization := "com.github.otrimegistro"
 
 homepage := Some(url("http://github.com/otrimegistro/aerospikez"))
 
-version := "0.1"
+startYear := Some(2014)
 
-scalaVersion := "2.11.0"
+licenses := Seq(
+  ("MIT License", url("http://raw.github.com/otrimegistro/aerospikez/master/LICENSE"))
+)
+
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/otrimegistro/aerospikez"),
+    "scm:git:https://github.com/otrimegistro/aerospikez.git",
+    Some("scm:git:git@github.com:otrimegistro/aerospikez.git")
+  )
+)
+
+// Dependencies //
 
 resolvers ++= Seq(
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -27,6 +42,12 @@ libraryDependencies ++= {
     "org.specs2"        %% "specs2"             % "2.3.11"  % "test"
   )
 }
+
+// Settings //
+
+scalaVersion := "2.11.0"
+
+crossScalaVersions := Seq("2.10.4", "2.11.0")
 
 scalacOptions ++= Seq(
   "-feature",
@@ -45,3 +66,36 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
   .setPreference(DoubleIndentClassDeclaration, true)
   .setPreference(RewriteArrowSymbols, true)
   .setPreference(AlignParameters, true)
+
+// Publishing //
+
+publishMavenStyle := true
+
+publishTo := {
+  val nexus = "http://nexus-otrimegistro.rhcloud.com/nexus"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+}
+
+Seq("OPENSHIFT_NEXUS_USER", "OPENSHIFT_NEXUS_PASS") map Properties.envOrNone match {
+  case Seq(Some(user), Some(pass)) =>
+    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus-otrimegistro.rhcloud.com", user, pass)
+  case _ =>
+    credentials ~= identity
+}
+
+publishArtifact := false
+
+pomIncludeRepository := { _ => false }
+
+pomExtra := (
+  <developers>
+    <developer>
+      <id>otrimegistro</id>
+      <name>Omar González</name>
+      <url>https://github.com/otrimegistro</url>
+    </developer>
+  </developers>
+)

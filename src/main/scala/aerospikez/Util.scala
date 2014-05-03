@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import scala.collection.mutable.OpenHashMap
 

@@ -1,4 +1,4 @@
-package cl.otrimegistro.aerospikez
+package aerospikez
 
 import com.typesafe.config.{ ConfigFactory, Config }
 

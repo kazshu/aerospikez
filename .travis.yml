@@ -14,13 +14,13 @@ before_script:
   - sudo /etc/init.d/aerospike start
   - sudo /etc/init.d/aerospike status
 
-script: sbt ++${TRAVIS_SCALA_VERSION} test
+script: sbt ++$TRAVIS_SCALA_VERSION test
 
 after_script:
   - sudo /etc/init.d/aerospike stop
 
 after_success:
-  - if [[ "${PUBLISH_ENABLED}" == "true" && "${TRAVIS_BRANCH}" == "master" && "${TRAVIS_PULL_REQUEST}" == "false" ]]; then sbt ++${TRAVIS_SCALA_VERSION} publish; fi
+  - test $PUBLISH == "true" &$ test $TRAVIS_BRANCH == "master" && test $TRAVIS_PULL_REQUEST == "false" && sbt ++$TRAVIS_SCALA_VERSION publish
 
 after_failure:
   - sudo cat /etc/aerospike/aerospike.conf
@@ -28,15 +28,15 @@ after_failure:
 
 env:
   global:
-    - PUBLISH_ENABLED = true
+    - PUBLISH = "false"
     - secure: "Nph15Ef9UWS/Wnpiivd/1xWjxyeVTrvsPdAeFP85yJLOvZnxTLarM9QS31YghNDnLrV0oOpe65BYNKpYb26zCAzKEQQrBBIftQUTvgnqvdKsHre+/MLJE9cdWeiWTldSSuZAAwQIt9ikqnGrfsAp3ltldh3CARGyKOBh4G59qIo="
     - secure: "I3QQPyVIPwHuxbDhIke51iZ4z6VnEFoRmElPcY7DpHbX84jUDDLRwincdzoTn6oyA2bpjdlgKIYqNnd1OYh90w4lo6C30ORQelQG9wMI0jxLbRZ7zsyMFFIqVbiFt9KM62GGPRPXhH1nO2SqIw962NOE+skgJnXiiibH41/SkVg="
 
 before_install:
-  - wget http://www.aerospike.com/community_downloads/3.2.3/aerospike-community-server-3.2.3-ubuntu12.04.tgz
-  - tar xf aerospike-community-server-3.2.3-ubuntu12.04.tgz && rm aerospike-community-server-3.2.3-ubuntu12.04.tgz -f
-  - cd aerospike-community-server-3.2.3-ubuntu12.04/
-  - sudo dpkg -i aerospike-community-server-3.2.3.ubuntu12.04.x86_64.deb
-  - cd ../ && rm aerospike-community-server-3.2.3-ubuntu12.04/ -rf
+  - wget http://www.aerospike.com/community_downloads/3.2.8/aerospike-community-server-3.2.8-ubuntu12.04.tgz
+  - tar xf aerospike-community-server-3.2.8-ubuntu12.04.tgz && rm aerospike-community-server-3.2.8-ubuntu12.04.tgz -f
+  - cd aerospike-community-server-3.2.8-ubuntu12.04/
+  - sudo dpkg -i aerospike-community-server-3.2.8.ubuntu12.04.x86_64.deb
+  - cd ../ && rm aerospike-community-server-3.2.8-ubuntu12.04/ -rf
   - sudo sed -i s/"pidfile \/var\/run\/aerospike\/asd.pid"/"pidfile \/var\/run\/asd.pid"/g /etc/aerospike/aerospike.conf
   - sudo sed -i '/reuse-address/a network-interface-name venet0' /etc/aerospike/aerospike.conf

@@ -38,7 +38,7 @@ libraryDependencies ++= {
     "org.scalaz"        %% "scalaz-core"        % scalazV,
     "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
     "com.aerospike"     %  "aerospike-client"   % "3.0.23",
-    "com.typesafe"      %  "config"             % "1.2.0",
+    "com.typesafe"      %  "config"             % "1.2.1",
     "org.specs2"        %% "specs2"             % "2.3.11"  % "test"
   )
 }

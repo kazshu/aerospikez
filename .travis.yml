@@ -43,8 +43,8 @@ before_install:
   - V="3.2.8"
   - AEROSPIKE_SERVER="aerospike-community-server-${V}-ubuntu12.04"
   - wget http://www.aerospike.com/community_downloads/${V}/${AEROSPIKE_SERVER}.tgz
-  - tar xf  ${AEROSPIKE_SERVER}.tgz
-  - sudo dpkg -i ${AEROSPIKE_SERVER}/${AEROSPIKE_SERVER}.x86_64.deb
+  - tar xvf ${AEROSPIKE_SERVER}.tgz
+  - sudo dpkg -i ${AEROSPIKE_SERVER}/aerospike-community-server*
   - rm -rf ${AEROSPIKE_SERVER}*
   - sudo sed -i s/"pidfile \/var\/run\/aerospike\/asd.pid"/"pidfile \/var\/run\/asd.pid"/ /etc/aerospike/aerospike.conf
   - sudo sed -i '/reuse-address/a network-interface-name venet0' /etc/aerospike/aerospike.conf

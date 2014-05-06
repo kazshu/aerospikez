@@ -23,7 +23,7 @@ private[aerospikez] object Util {
       if (self != null) Some(self) else None
   }
 
-  implicit def pimpAny[A](a: A) = new PimpAny(a)
+  implicit def pimpAny[A](a: A): PimpAny[A] = new PimpAny(a)
 
   class PimpJavaMap[K, V](coll: java.util.Map[K, V]) {
 
@@ -46,7 +46,7 @@ private[aerospikez] object Util {
   implicit def pimpJavaMap[K, V](coll: java.util.Map[K, V]): PimpJavaMap[K, V] = new PimpJavaMap[K, V](coll)
 
   @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Type for Key, and you provide a ${K}!")
-  trait SupportKey[K]
+  trait SupportKey[@specialized(Int, Long) K]
   object SupportKey {
     implicit object string extends SupportKey[String]
     implicit object int extends SupportKey[Int]
@@ -56,9 +56,11 @@ private[aerospikez] object Util {
 
   sealed class DefaultValueTo[T1, T2]
   trait ValueSupportTypes {
-    implicit def supportAny[T1, T2] = new DefaultValueTo[T1, T2]
+    // atomic: Int/Long, String
+    // complex: List, Map
+    implicit def supportAny[T1, T2]: DefaultValueTo[T1, T2] = new DefaultValueTo[T1, T2]
   }
   object DefaultValueTo extends ValueSupportTypes {
-    implicit def default[T2] = new DefaultValueTo[T2, T2]
+    implicit def default[T2]: DefaultValueTo[T2, T2] = new DefaultValueTo[T2, T2]
   }
 }

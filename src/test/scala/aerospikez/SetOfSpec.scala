@@ -7,12 +7,14 @@ import org.specs2.matcher.MapMatchers
 
 import scala.collection.mutable.OpenHashMap
 
+import Operations._
+
 class SetOfSpec extends Specification with MapMatchers {
   sequential
 
   def afterTests = { client.close }
 
-  val client = Aerospikez()
+  val client = AerospikeClient()
 
   val set = client.setOf(Namespace("test"))
 
@@ -70,7 +72,7 @@ class SetOfSpec extends Specification with MapMatchers {
     }
   }
 
-  "get[<type value>](<a key>)" should {
+  "get(<a key>)" should {
 
     "return a Some(<a value>) is the key exists" in {
 
@@ -83,7 +85,7 @@ class SetOfSpec extends Specification with MapMatchers {
     }
   }
 
-  "get[<type value>](<a key>, <a bin>)" should {
+  "get(<a key>, <a bin>)" should {
 
     "return a Some(<a value> is the key and bin exists" in {
 
@@ -98,7 +100,7 @@ class SetOfSpec extends Specification with MapMatchers {
     }
   }
 
-  "get[<type value>](Keys(<one or more key>)" should {
+  "get(Keys(<one or more key>)" should {
 
     "return a OpenHashMap with only the values that exists in that records/keys" in {
 
@@ -359,6 +361,33 @@ class SetOfSpec extends Specification with MapMatchers {
       )
     }
   }
+
+  "getHeader(<a key>)" should {
+
+    "return the record (if exists) generation and expiration only for specified key" in {
+      set.delete("new key").run
+      set.put("new key", "new value").run
+      set.getHeader("new key").run must contain("gen: 1, exp: ")
+    }
+
+    "return a string message if the record not exists" in {
+
+      set.delete("new key").run
+      set.getHeader("new key").run must contain("record no found")
+    }
+  }
+
+  /*"operate(<a key>, <one or more Operations>)" should {
+
+    "return the value of last operation that are applied" in {
+
+      val op1 = set.operate("num", Put(10), Add(2), Get()).run
+      val op2 = set.operate("name", Put("Chuck"), Append(" Norris"), Get()).run
+
+      op1 must beSome(12)
+      op2 must beSome("Chuck Norris")
+    }
+  }*/
 
   step(afterTests)
 }

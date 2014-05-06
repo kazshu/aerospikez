@@ -8,33 +8,34 @@ import com.aerospike.client.Host
 import scalaz.NonEmptyList
 import Util._
 
-object Aerospikez {
+object AerospikeClient {
 
   def apply(hosts: NonEmptyList[String] = NonEmptyList("localhost:3000"),
             clientConfig: ⇒ ClientConfig = ClientConfig(),
-            configFile: Config = ConfigFactory.load()): Aerospikez = {
+            configFile: Config = ConfigFactory.load()): AerospikeClient = {
 
     ConfigFile.file = configFile
 
-    new Aerospikez(hosts, clientConfig, configFile)
+    new AerospikeClient(hosts, clientConfig, configFile)
   }
 }
 
-private[aerospikez] class Aerospikez(hosts: NonEmptyList[String], clientConfig: ClientConfig, configFile: Config) {
-  self ⇒
+private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientConfig: ClientConfig, configFile: Config) {
 
   def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
     implicit ev: V DefaultValueTo Any): SetOf[V] = {
 
-    new SetOf[V](namespace, name, self.async)
+    new SetOf[V](namespace, name, this.async)
+  }
+
+  def close: Unit = {
+    async.close()
   }
 
   private[aerospikez] final val async = new AsyncClient(
     clientConfig.getPolicy(),
     getHosts(configFile, hosts).map { createHost(_, getPort(configFile)) }.list: _*
   )
-
-  def close = async.close()
 
   private[aerospikez] def getHosts(configFile: Config, hosts: NonEmptyList[String]): NonEmptyList[String] = {
     import scala.collection.JavaConversions.asScalaBuffer

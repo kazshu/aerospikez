@@ -10,9 +10,9 @@ import com.aerospike.client.Host
 
 import scalaz.NonEmptyList
 
-class AerospikezSpec extends Specification {
+class AerospikeClientSpec extends Specification {
 
-  val aerospikezInstance = Aerospikez.apply()
+  val aerospikezInstance = AerospikeClient.apply()
 
   val defaultPort: Int = 3000
   val defaultHosts: NonEmptyList[String] = Hosts("127.0.0.1:3000")
@@ -26,14 +26,14 @@ class AerospikezSpec extends Specification {
     }
   """, ConfigParseOptions.defaults)
 
-  "An Aerospikez object" should {
+  "An AerospikeClient" should {
 
     "received a optional hosts list, client config and config file" in {
 
-      Aerospikez()
-      Aerospikez(Hosts("127.0.0.1:3000"))
-      Aerospikez(Hosts("127.0.0.1:3000"), ClientConfig())
-      Aerospikez(Hosts("127.0.0.1:3000"), ClientConfig(), badConfigFile)
+      AerospikeClient()
+      AerospikeClient(Hosts("127.0.0.1:3000"))
+      AerospikeClient(Hosts("127.0.0.1:3000"), ClientConfig())
+      AerospikeClient(Hosts("127.0.0.1:3000"), ClientConfig(), badConfigFile)
 
       // because the previos expresions will try to connect to the aeroskipe
       // server, if not exception are throw then everything is correct:

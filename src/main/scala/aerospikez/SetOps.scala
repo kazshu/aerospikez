@@ -9,13 +9,12 @@ import com.aerospike.client.async.AsyncClient
 import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
 
 import scalaz.{ -\/, \/- }
-import scalaz.syntax.std.option._
 import scalaz.concurrent.Task
 import scalaz.Free.Trampoline
 import scalaz.Trampoline
-import scalaz.syntax.id._
 
 import Util.{ pimpAny, pimpJavaMap }
+import Operations._
 
 private[aerospikez] class SetOps[K](client: AsyncClient) {
 
@@ -38,8 +37,12 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     Task.async { register ⇒
       client.put(policyW,
         new WriteListener {
-          def onSuccess(key: Key): Unit = register(\/-(oldValue.asInstanceOf[Option[V]]))
-          def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
+          def onSuccess(key: Key): Unit = {
+            register(\/-(oldValue.asInstanceOf[Option[V]]))
+          }
+          def onFailure(ae: AerospikeException): Unit = {
+            register(-\/(ae))
+          }
         }, key, new Bin(bin, value))
     }
   }
@@ -49,13 +52,13 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.get(policy,
         new RecordListener {
           def onSuccess(key: Key, record: Record): Unit = {
-            lazy val value = record.getValue(bin)
-            register(\/-(
+            register(\/-(Trampoline.done({
+              lazy val value = record.getValue(bin)
               if (record != null && value != null)
                 Some(value.asInstanceOf[V])
               else
                 None
-            ))
+            }).run))
           }
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
@@ -91,15 +94,17 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.get(policy,
         new RecordArrayListener {
           def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
-            val length = keys.length
+            lazy val length = keys.length
 
             def getMap(m: OHMap[K, V] = OHMap.empty[K, V],
                        i: Int = 0): Trampoline[OHMap[K, V]] = {
+              lazy val rec = records(i)
+
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getMap({
-                  if (records(i) != null && records(i).bins != null) {
-                    records(i).bins.toOpenHashMap().run.get(bin).map { userValue ⇒
+                  if (rec != null && rec.bins != null) {
+                    rec.bins.toOpenHashMap().run.get(bin).map { userValue ⇒
                       m.put(keys(i).userKey.asInstanceOf[K], userValue.asInstanceOf[V])
                     }
                   }; m
@@ -129,13 +134,15 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
 
             def getMap(m: OHMap[K, OHMap[String, V]] = OHMap.empty[K, OHMap[String, V]],
                        i: Int = 0): Trampoline[OHMap[K, OHMap[String, V]]] = {
+              lazy val rec = records(i)
+
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getMap({
-                  if (keys(i) != null && (records(i) != null && records(i).bins != null)) {
+                  if (keys(i) != null && (rec != null && rec.bins != null)) {
                     m.put(
                       keys(i).userKey.asInstanceOf[K],
-                      records(i).bins.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
+                      rec.bins.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
                     )
                   }; m
                 }, i + 1))
@@ -212,7 +219,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.exists(policy,
         new ExistsArrayListener {
           def onSuccess(keys: Array[Key], existsArray: Array[Boolean]): Unit = {
-            val length = keys.length
+            lazy val length = keys.length
 
             def getOHMap(m: OHMap[K, Boolean] = OHMap.empty[K, Boolean],
                          i: Int = 0): Trampoline[OHMap[K, Boolean]] = {
@@ -248,4 +255,110 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
         }, key, new Bin(bin, value))
     }
   }
+
+  private[aerospikez] def getHeader(policy: QueryPolicy, key: Key): Task[String] = {
+    Task.async { register ⇒
+      client.getHeader(policy,
+        new RecordListener {
+          def onSuccess(key: Key, record: Record): Unit = {
+            register(\/-(Trampoline.done(
+              if (record != null)
+                s"(gen: ${record.generation}, exp: ${record.expiration})"
+              else
+                s"(record no found)"
+            ).run))
+          }
+          def onFailure(ae: AerospikeException): Unit = {
+            register(-\/(ae))
+          }
+        }, key)
+    }
+  }
+
+  private[aerospikez] def getHeader(policy: QueryPolicy, keys: Array[Key]): Task[OHMap[Key, String]] = {
+    Task.async { register ⇒
+      client.getHeader(policy,
+        new RecordArrayListener {
+          def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
+            lazy val length = keys.length
+
+            def getOHMap(m: OHMap[Key, String] = OHMap.empty[Key, String],
+                         i: Int = 0): Trampoline[OHMap[Key, String]] = {
+              lazy val rec = records(i)
+
+              i match {
+                case `length` ⇒ Trampoline.done(m)
+                case _ ⇒ Trampoline.suspend(getOHMap({
+                  m.put(keys(i),
+                    if (rec != null)
+                      s"(gen: ${rec.generation}, exp: ${rec.expiration})"
+                    else
+                      s"(record no found)");
+                  m
+                },
+                  i + 1))
+              }
+            }
+
+            register(\/-(getOHMap().run))
+          }
+          def onFailure(ae: AerospikeException): Unit = {
+            register(-\/(ae))
+          }
+        }, keys)
+    }
+  }
+
+  /*private[aerospikez] def operate[V](policy: WritePolicy, key: Key, operation: Ops*): Task[Option[V]] = {
+    operation.last match {
+      case _: Touch | _: Append | _: Put[V] | _: Prepend | _: Add ⇒
+        Task.async { register ⇒
+          client.operate(policy,
+            new RecordListener {
+              def onSuccess(key: Key, record: Record): Unit = {
+                register(\/-(Some(().asInstanceOf[V])))
+              }
+              def onFailure(ae: AerospikeException): Unit = {
+                register(-\/(ae))
+              }
+            }, key, operation.map(_.operate): _*)
+        }
+      case _: GetHeader ⇒
+        Task.async { register ⇒
+          client.operate(policy,
+            new RecordListener {
+              def onSuccess(key: Key, record: Record): Unit = {
+                register(\/-(Some({
+                  if (record != null)
+                    s"gen: ${record.generation}, exp: ${record.expiration}"
+                  else
+                    s"record no found"
+                }.asInstanceOf[V])))
+              }
+              def onFailure(ae: AerospikeException): Unit = {
+                register(-\/(ae))
+              }
+            }, key, operation.map(_.operate): _*)
+        }
+      case last: Get ⇒
+        Task.async { register ⇒
+          client.operate(policy,
+            new RecordListener {
+              def onSuccess(key: Key, record: Record): Unit = {
+                register(\/-({
+                  lazy val value = record.getValue(last.binName)
+                  if (record != null && value != null)
+                    Some(value.asInstanceOf[V])
+                  else
+                    None
+                }))
+              }
+              def onFailure(ae: AerospikeException): Unit = {
+                register(-\/(ae))
+              }
+            }, key, operation.map(_.operate): _*)
+        }
+    }
+  }*/
+
 }

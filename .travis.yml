@@ -25,7 +25,7 @@ after_success: >
   test $TRAVIS_BRANCH == master &&
   test $PUBLISH_ENABLED == true &&
   test $TRAVIS_PULL_REQUEST == false &&
-  test sbt ++$TRAVIS_SCALA_VERSION publish
+  sbt ++$TRAVIS_SCALA_VERSION publish
 
 after_failure:
   - sudo cat /etc/aerospike/aerospike.conf
@@ -38,8 +38,8 @@ env:
         Hrf3ciRbJDLoCqiv0IuQcT1ZHS71QjlCfPynwyDrEVsoa6W0QqKGctaMSprmEGUyUp8ff3nORHIWHlc8Y7DSuj
         sL8wSguLEXzNeZZ38dk0RtyZnmV0E45hLfXEgfjJi09uHURRwLn7IAfjl8uPvBwFxm4iQko9qvcmqbm2HN16E=
     - secure: |-
-        N95FSLeL3VigFEsPa3CiOCnLT3AmQHBR72LoVyFPsv3Czyvds5s1+pHD5nwCq4XF8vbHfMY0h+Ljnf7cjbNeHfw
-        7atcKqE5ma67exxDIEann2by145SCFzkLG73Gl4AAHNrogoMM8xKo9CRTa2BSD4Pr8qBhKljy+3hgPo3tSNU=
+        N95FSLeL3VigFEsPa3CiOCnLT3AmQHBR72LoVyFPsv3Czyvds5s1+pHD5nwCq4XF8vbHfMY0h+Ljnf7cjbNeHf
+        w7atcKqE5ma67exxDIEann2by145SCFzkLG73Gl4AAHNrogoMM8xKo9CRTa2BSD4Pr8qBhKljy+3hgPo3tSNU=
 
 before_install:
   - V="3.2.8"

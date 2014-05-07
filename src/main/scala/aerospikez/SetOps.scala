@@ -309,8 +309,8 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  /*private[aerospikez] def operate[V](policy: WritePolicy, key: Key, operation: Ops*): Task[Option[V]] = {
-    operation.last match {
+  private[aerospikez] def operate[V](policy: WritePolicy, key: Key, operations: Ops*): Task[Option[V]] = {
+    operations.last match {
       case _: Touch | _: Append | _: Put[V] | _: Prepend | _: Add ⇒
         Task.async { register ⇒
           client.operate(policy,
@@ -321,7 +321,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               def onFailure(ae: AerospikeException): Unit = {
                 register(-\/(ae))
               }
-            }, key, operation.map(_.operate): _*)
+            }, key, operations.map(_.toOperation): _*)
         }
       case _: GetHeader ⇒
         Task.async { register ⇒
@@ -338,7 +338,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               def onFailure(ae: AerospikeException): Unit = {
                 register(-\/(ae))
               }
-            }, key, operation.map(_.operate): _*)
+            }, key, operations.map(_.toOperation): _*)
         }
       case last: Get ⇒
         Task.async { register ⇒
@@ -356,9 +356,9 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               def onFailure(ae: AerospikeException): Unit = {
                 register(-\/(ae))
               }
-            }, key, operation.map(_.operate): _*)
+            }, key, operations.map(_.toOperation): _*)
         }
     }
-  }*/
+  }
 
 }

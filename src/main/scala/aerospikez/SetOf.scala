@@ -115,8 +115,9 @@ private[aerospikez] class SetOf[@specialized(Int, Long) V](namespace: Namespace,
     setOp.getHeader(queryPolicy, getKey[K](key))
   }
 
-  /*def operate[K: SupportKey, V2](key: K, operation: Ops*)(implicit ev: V2 DefaultValueTo V): Task[Option[V2]] = {
+  def operate[K: SupportKey, V2](key: K, operations: Ops*)(
+    implicit ev: V2 DefaultValueTo V): Task[Option[V2]] = {
 
-    setOp.operate[V2](writePolicy, getKey[K](key), operation: _*)
-  }*/
+    setOp.operate[V2](writePolicy, getKey[K](key), operations: _*)
+  }
 }

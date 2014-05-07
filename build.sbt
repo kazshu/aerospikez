@@ -1,5 +1,10 @@
+import sbtrelease.ReleaseStateTransformations._
 import scalariform.formatter.preferences._
-import scala.util.Properties
+import scala.util.Properties._
+import xerial.sbt.Sonatype._
+import sbtrelease._
+
+import com.typesafe.sbt.pgp.PgpKeys
 
 // Project Info //
 
@@ -69,24 +74,50 @@ ScalariformKeys.preferences := ScalariformKeys.preferences.value
 
 // Publishing //
 
-publishMavenStyle := true
-
 publishTo := {
-  val nexus = "http://nexus-otrimegistro.rhcloud.com/nexus"
+  val nexus = "https://oss.sonatype.org/"
   if (isSnapshot.value)
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
-Seq("OPENSHIFT_NEXUS_USER", "OPENSHIFT_NEXUS_PASS") map Properties.envOrNone match {
+Seq("SONATYPE_USER", "SONATYPE_PASS") map envOrNone match {
   case Seq(Some(user), Some(pass)) =>
-    credentials += Credentials("Sonatype Nexus Repository Manager", "nexus-otrimegistro.rhcloud.com", user, pass)
+    credentials += Credentials(
+      "Sonatype Nexus Repository Manager",
+      "oss.sonatype.org", user, pass)
   case _ =>
     credentials ~= identity
 }
 
-publishArtifact := false
+sonatypeSettings
+
+releaseSettings
+
+def releaseStepCross[A](key: TaskKey[A]) = ReleaseStep(
+  action = state => Project.extract(state).runTask(key, state)._1,
+  enableCrossBuild = true
+)
+
+ReleaseKeys.releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCross(PgpKeys.publishSigned),
+  setNextVersion,
+  commitNextVersion,
+  releaseStepCross(SonatypeKeys.sonatypeReleaseAll),
+  pushChanges
+)
+
+publishMavenStyle := true
+
+publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 

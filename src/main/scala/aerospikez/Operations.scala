@@ -4,36 +4,40 @@ import com.aerospike.client.{ Bin, Operation }
 
 trait Ops {
 
-  def operate: Operation
+  def toOperation: Operation
 }
 
 object Operations {
 
   case class Prepend(value: String, binName: String = "") extends Ops {
-    def operate = Operation.prepend(new Bin(binName, value))
+    def toOperation = Operation.prepend(new Bin(binName, value))
   }
 
   case class Append(value: String, binName: String = "") extends Ops {
-    def operate = Operation.append(new Bin(binName, value))
+    def toOperation = Operation.append(new Bin(binName, value))
   }
 
   case class Put[V](value: V, val binName: String = "") extends Ops {
-    def operate = Operation.put(new Bin(binName, value))
+    def toOperation = Operation.put(new Bin(binName, value))
   }
 
   case class Add(value: Int, binName: String = "") extends Ops {
-    def operate = Operation.add(new Bin(binName, value))
+    def toOperation = Operation.add(new Bin(binName, value))
   }
 
   case class Get(val binName: String = "") extends Ops {
-    def operate = Operation.get(binName)
+    def toOperation = Operation.get(binName)
+  }
+
+  case class GetAll() extends Ops {
+    def toOperation = Operation.get()
   }
 
   case class GetHeader() extends Ops {
-    def operate = Operation.getHeader()
+    def toOperation = Operation.getHeader()
   }
 
   case class Touch() extends Ops {
-    def operate = Operation.touch()
+    def toOperation = Operation.touch()
   }
 }

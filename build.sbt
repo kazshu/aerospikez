@@ -42,7 +42,7 @@ libraryDependencies ++= {
   Seq(
     "org.scalaz"        %% "scalaz-core"        % scalazV,
     "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
-    "com.aerospike"     %  "aerospike-client"   % "3.0.23",
+    "com.aerospike"     %  "aerospike-client"   % "3.0.24",
     "com.typesafe"      %  "config"             % "1.2.1",
     "org.specs2"        %% "specs2"             % "2.3.11"  % "test"
   )

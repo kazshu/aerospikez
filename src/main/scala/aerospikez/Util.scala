@@ -45,7 +45,13 @@ private[aerospikez] object Util {
 
   implicit def pimpJavaMap[K, V](coll: java.util.Map[K, V]): PimpJavaMap[K, V] = new PimpJavaMap[K, V](coll)
 
-  @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Type for Key, and you provide a ${K}!")
+  @annotation.implicitNotFound(msg = "That Set has been forced to accept only ${V} as Value, but you provide a ${V2}!")
+  sealed class SubTypeOf[V2, V]
+  object SubTypeOf {
+    implicit def f[V2, V](implicit ev: V2 <:< V): SubTypeOf[V2, V] = new SubTypeOf[V2, V]
+  }
+
+  @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long and Array[Byte] as Key, but you provide a ${K}!")
   trait SupportKey[@specialized(Int, Long) K]
   object SupportKey {
     implicit object string extends SupportKey[String]
@@ -54,13 +60,21 @@ private[aerospikez] object Util {
     implicit object arraybyte extends SupportKey[Array[Byte]]
   }
 
-  sealed class DefaultValueTo[T1, T2]
-  trait ValueSupportTypes {
-    // atomic: Int/Long, String
-    // complex: List, Map
-    implicit def supportAny[T1, T2]: DefaultValueTo[T1, T2] = new DefaultValueTo[T1, T2]
+  @annotation.implicitNotFound(msg = "Aaerospike support only String, Int, Long, Map and List as Value, but you provide a ${V}!")
+  trait SupportValue[@specialized(Int, Long) V]
+  object SupportValue {
+    implicit object string extends SupportValue[String]
+    implicit object int extends SupportValue[Int]
+    implicit object long extends SupportValue[Long]
+    implicit object list extends SupportValue[List[_]]
+    implicit object map extends SupportValue[Map[_, _]]
   }
-  object DefaultValueTo extends ValueSupportTypes {
-    implicit def default[T2]: DefaultValueTo[T2, T2] = new DefaultValueTo[T2, T2]
+
+  sealed class DefaultValueTo[V2, V]
+  trait DefaultToAny {
+    implicit def defaultAny[V2, V]: DefaultValueTo[V2, V] = new DefaultValueTo[V2, V]
+  }
+  object DefaultValueTo extends DefaultToAny {
+    implicit def defaultType[V]: DefaultValueTo[V, V] = new DefaultValueTo[V, V]
   }
 }

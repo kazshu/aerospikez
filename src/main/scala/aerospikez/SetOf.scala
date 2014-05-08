@@ -27,18 +27,18 @@ private[aerospikez] class SetOf[@specialized(Int, Long) V](namespace: Namespace,
   object distinctKey2 { implicit val distinct: distinctKey2.type = this }
   object distinctKey3 { implicit val distinct: distinctKey3.type = this }
 
-  def put[K: SupportKey, V2](
+  def put[K: SupportKey, V2: SupportValue](
     key: K,
     value: V2,
-    bin: String = ""): Task[Unit] = {
+    bin: String = "")(implicit ev: V2 SubTypeOf V): Task[Unit] = {
 
     setOp.put[V2](writePolicy, getKey[K](key), value, bin)
   }
 
-  def putG[K: SupportKey, V2](
+  def putG[K: SupportKey, V2: SupportValue](
     key: K,
     value: V2,
-    bin: String = ""): Task[Option[V2]] = {
+    bin: String = "")(implicit ev: V2 SubTypeOf V): Task[Option[V2]] = {
 
     setOp.putG[V2](queryPolicy, writePolicy, getKey[K](key), value, bin)
   }
@@ -62,19 +62,22 @@ private[aerospikez] class SetOf[@specialized(Int, Long) V](namespace: Namespace,
   }
 
   def get[K: SupportKey, V2](
-    keys: Array[K], bin: String)(implicit k: distinctKey2.type, ev: V2 DefaultValueTo V): Task[OHMap[K, V2]] = {
+    keys: Array[K],
+    bin: String)(implicit k: distinctKey2.type, ev: V2 DefaultValueTo V): Task[OHMap[K, V2]] = {
 
     setOp.get[K, V2](queryPolicy, keys.map(getKey[K](_)), bin)
   }
 
   def get[K: SupportKey, V2](
-    key: K, bins: Array[String])(implicit ev: V2 DefaultValueTo V): Task[OHMap[String, V2]] = {
+    key: K,
+    bins: Array[String])(implicit ev: V2 DefaultValueTo V): Task[OHMap[String, V2]] = {
 
     setOp.get[V2](queryPolicy, getKey[K](key), bins)
   }
 
   def get[K: SupportKey, V2](
-    keys: Array[K], bins: Array[String])(implicit k: distinctKey3.type, ev: V2 DefaultValueTo V): Task[OHMap[K, OHMap[String, V]]] = {
+    keys: Array[K],
+    bins: Array[String])(implicit k: distinctKey3.type, ev: V2 DefaultValueTo V): Task[OHMap[K, OHMap[String, V]]] = {
 
     setOp.get[K, V](queryPolicy, keys.map(getKey[K](_)), bins)
   }

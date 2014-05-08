@@ -135,6 +135,7 @@ myset.get(id_user, "personal info").run            // Some(Map(full name -> Chuc
 
 
 // get(Keys(<one or more key>))
+import aerospikez.Keys
 myset.put("two", 2).run
 myset.get(Keys("one", "two")).run                  // OpenHashMap(two -> 2, one -> 1)
 
@@ -148,6 +149,7 @@ myset.get(Keys(user_1, user_2), "name").run        // OpenHashMap(1893 -> Bruce 
 
 
 // get(<a key>, Bins(<one or more bin>))
+import aerospikez.Bins
 myset.put("num", 0, "add id").run
 myset.put("num", 1, "mult id").run
 myset.get("num", Bins("add id", "mult id")).run    // OpenHashMap(mult id -> 1, add id -> 0)

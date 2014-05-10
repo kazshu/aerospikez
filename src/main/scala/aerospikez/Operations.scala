@@ -1,6 +1,6 @@
 package aerospikez
 
-import com.aerospike.client.{ Bin, Operation }
+import com.aerospike.client.{ Operation, Bin ⇒ ABin }
 
 trait Ops {
 
@@ -10,19 +10,19 @@ trait Ops {
 object Operations {
 
   case class Prepend(value: String, binName: String = "") extends Ops {
-    def toOperation = Operation.prepend(new Bin(binName, value))
+    def toOperation = Operation.prepend(new ABin(binName, value))
   }
 
   case class Append(value: String, binName: String = "") extends Ops {
-    def toOperation = Operation.append(new Bin(binName, value))
+    def toOperation = Operation.append(new ABin(binName, value))
   }
 
   case class Put[V](value: V, val binName: String = "") extends Ops {
-    def toOperation = Operation.put(new Bin(binName, value))
+    def toOperation = Operation.put(new ABin(binName, value))
   }
 
   case class Add(value: Int, binName: String = "") extends Ops {
-    def toOperation = Operation.add(new Bin(binName, value))
+    def toOperation = Operation.add(new ABin(binName, value))
   }
 
   case class Get(val binName: String = "") extends Ops {

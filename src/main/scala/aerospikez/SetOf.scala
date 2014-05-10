@@ -43,6 +43,13 @@ private[aerospikez] class SetOf[@specialized(Int, Long) V](namespace: Namespace,
     setOp.putG[V2](queryPolicy, writePolicy, getKey[K](key), value, bin)
   }
 
+  def put[K: SupportKey, V2: SupportValue](
+    key: K,
+    bins: Bin[V2]*)(implicit ev: V2 SubTypeOf V): Task[Unit] = {
+
+    setOp.put[V2](writePolicy, getKey[K](key), bins)
+  }
+
   def get[K: SupportKey, V2](
     key: K)(implicit ev: V2 DefaultValueTo V): Task[Option[V2]] = {
 

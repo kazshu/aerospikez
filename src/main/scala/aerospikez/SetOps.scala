@@ -2,9 +2,10 @@ package aerospikez
 
 import com.aerospike.client.listener.{ RecordArrayListener, ExistsArrayListener, DeleteListener }
 import com.aerospike.client.listener.{ WriteListener, RecordListener, ExistsListener }
-import com.aerospike.client.{ AerospikeException, Record, Host, Key, Bin }
+import com.aerospike.client.{ AerospikeException, Record, Host, Key }
 import com.aerospike.client.policy.{ QueryPolicy, WritePolicy, Policy }
 import com.aerospike.client.async.AsyncClient
+import com.aerospike.client.{ Bin ⇒ ABin }
 
 import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
 
@@ -28,7 +29,21 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
           }
-        }, key, new Bin(bin, value))
+        }, key, new ABin(bin, value))
+    }
+  }
+
+  private[aerospikez] def put[V](policy: WritePolicy, key: Key, bins: Seq[Bin[V]]): Task[Unit] = {
+    Task.async { register ⇒
+      client.put(policy,
+        new WriteListener {
+          def onSuccess(key: Key): Unit = {
+            register(\/-(()))
+          }
+          def onFailure(ae: AerospikeException): Unit = {
+            register(-\/(ae))
+          }
+        }, key, bins.map(t ⇒ new ABin(t._1, t._2)): _*)
     }
   }
 
@@ -43,7 +58,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
           }
-        }, key, new Bin(bin, value))
+        }, key, new ABin(bin, value))
     }
   }
 
@@ -182,7 +197,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
           }
-        }, key, new Bin(bin, value))
+        }, key, new ABin(bin, value))
     }
   }
 
@@ -196,7 +211,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
           }
-        }, key, new Bin(bin, value))
+        }, key, new ABin(bin, value))
     }
   }
 
@@ -252,7 +267,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
           }
-        }, key, new Bin(bin, value))
+        }, key, new ABin(bin, value))
     }
   }
 

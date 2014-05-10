@@ -72,6 +72,15 @@ class SetOfSpec extends Specification with MapMatchers {
     }
   }
 
+  "put(<a key>, <one or more Bin(<a bin>, <a value>)>" should {
+
+    "save different Bin in the same record/key" in {
+
+      set.put("example1", Bin("one", 1), Bin("two", 2)).run must beEqualTo(())
+      set.get("example1", Bins("one", "two")).run must havePairs(("one", 1), ("two", 2))
+    }
+  }
+
   "get(<a key>)" should {
 
     "return a Some(<a value>) is the key exists" in {

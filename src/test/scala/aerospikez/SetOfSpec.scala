@@ -7,7 +7,7 @@ import org.specs2.matcher.MapMatchers
 
 import scala.collection.mutable.OpenHashMap
 
-import Operations._
+import internal.Operations._
 
 class SetOfSpec extends Specification with MapMatchers {
   sequential

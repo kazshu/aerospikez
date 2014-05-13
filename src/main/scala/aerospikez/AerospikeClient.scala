@@ -1,12 +1,20 @@
 package aerospikez
 
+import scala.collection.JavaConversions.asScalaBuffer
+
 import com.typesafe.config.{ ConfigFactory, Config }
 
+import com.aerospike.client.{ Language, Host }
 import com.aerospike.client.async.AsyncClient
-import com.aerospike.client.Host
+import com.aerospike.client.lua.LuaConfig
+import com.aerospike.client.policy.Policy
+import com.aerospike.client.cluster.Node
 
 import scalaz.NonEmptyList
-import Util._
+
+import internal.util.General._
+import internal.util.TSafe._
+import internal.util.Pimp._
 
 object AerospikeClient {
 
@@ -22,23 +30,60 @@ object AerospikeClient {
 
 private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientConfig: ClientConfig, configFile: Config) {
 
-  def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
-    implicit ev: V DefaultValueTo Any): SetOf[V] = {
+  private val generalPolicy = new Policy { timeout = clientConfig.policy.timeout }
 
-    new SetOf[V](namespace, name, this.async)
+  def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
+    implicit ev: V DefaultTypeTo Any): SetOf[V] = {
+
+    new SetOf[V](namespace, name, this.asyncClient, generalPolicy)
+  }
+
+  def register(name: String, path: String = "udf", language: String = "LUA"): Unit = {
+
+    var realName: String = name
+    lazy val realPath: String = if (path.endsWith("/")) path else path + "/"
+    val realLanguage = language.toUpperCase match {
+      case "LUA" ⇒
+        LuaConfig.SourceDirectory = path
+        if (!name.endsWith(".lua")) realName += ".lua"
+        Language.LUA
+      case _ ⇒ throw new IllegalArgumentException(s"$language is not supported as UDF for Aerospike")
+    }
+
+    asyncClient.register(
+      generalPolicy,
+      realPath + realName,
+      realName,
+      realLanguage
+    )
+  }
+
+  def isConnected: Boolean = {
+
+    asyncClient.isConnected()
+  }
+
+  def getNodes: Array[Node] = {
+
+    asyncClient.getNodes()
   }
 
   def close: Unit = {
-    async.close()
+
+    asyncClient.close()
   }
 
-  private[aerospikez] final val async = new AsyncClient(
-    clientConfig.getPolicy(),
-    getHosts(configFile, hosts).map { createHost(_, getPort(configFile)) }.list: _*
-  )
+  private[aerospikez] final val asyncClient: AsyncClient = {
+
+    new AsyncClient(
+      clientConfig.policy,
+      getHosts(configFile, hosts).map {
+        createHost(_, getPort(configFile))
+      }.list: _*
+    )
+  }
 
   private[aerospikez] def getHosts(configFile: Config, hosts: NonEmptyList[String]): NonEmptyList[String] = {
-    import scala.collection.JavaConversions.asScalaBuffer
 
     trySome(configFile.getStringList("aerospike.hosts").toList match {
       case h :: t ⇒ NonEmptyList.nel(h, t)
@@ -47,6 +92,7 @@ private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientCon
   }
 
   private[aerospikez] def getPort(configFile: Config): Int = {
+
     trySome(configFile.getInt("aerospike.port")).getOrElse(3000)
   }
 

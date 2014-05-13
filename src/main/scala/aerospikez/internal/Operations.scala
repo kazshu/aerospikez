@@ -1,4 +1,4 @@
-package aerospikez
+package aerospikez.internal
 
 import com.aerospike.client.{ Operation, Bin ⇒ ABin }
 

@@ -4,9 +4,11 @@ import com.aerospike.client.policy.{ RecordExistsAction, GenerationPolicy, Write
 import com.aerospike.client.async.{ MaxCommandAction, AsyncClientPolicy }
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import Util.trySome
+
+import internal.util.General._
 
 private[aerospikez] object ConfigFile {
+
   var file: Config = ConfigFactory.load()
   val config: Option[Config] = trySome(file.getConfig("aerospike"))
 }
@@ -38,11 +40,14 @@ object ClientConfig {
 
   }
 
-  private[aerospikez] def parseAction(action: String, defaultAction: MaxCommandAction): MaxCommandAction = action.toUpperCase match {
-    case "ACCEPT" ⇒ MaxCommandAction.ACCEPT
-    case "REJECT" ⇒ MaxCommandAction.REJECT
-    case "BLOCK"  ⇒ MaxCommandAction.BLOCK
-    case _        ⇒ defaultAction
+  private[aerospikez] def parseAction(action: String, defaultAction: MaxCommandAction): MaxCommandAction = {
+
+    action.toUpperCase match {
+      case "ACCEPT" ⇒ MaxCommandAction.ACCEPT
+      case "REJECT" ⇒ MaxCommandAction.REJECT
+      case "BLOCK"  ⇒ MaxCommandAction.BLOCK
+      case _        ⇒ defaultAction
+    }
   }
 }
 
@@ -56,8 +61,7 @@ private[aerospikez] class ClientConfig(
     failIfNotConnected: Boolean,
     asyncMaxCommandAction: MaxCommandAction) {
 
-  private[aerospikez] def getPolicy() = {
-
+  private[aerospikez] val policy: AsyncClientPolicy = {
     val clientPolicy = new AsyncClientPolicy()
     clientPolicy.timeout = timeout
     clientPolicy.maxSocketIdle = maxSocketIdle
@@ -67,7 +71,6 @@ private[aerospikez] class ClientConfig(
     clientPolicy.asyncSelectorThreads = asyncSelectorThreads
     clientPolicy.asyncSelectorTimeout = asyncSelectorTimeout
     clientPolicy.asyncMaxCommandAction = asyncMaxCommandAction
-
     clientPolicy
   }
 }
@@ -99,15 +102,13 @@ private[aerospikez] class QueryConfig(
     maxConcurrentNodes: Int,
     sleepBetweenRetries: Int) {
 
-  private[aerospikez] def getPolicy() = {
-
+  private[aerospikez] val policy: QueryPolicy = {
     val queryPolicy = new QueryPolicy()
     queryPolicy.timeout = timeout
     queryPolicy.maxRetries = maxRetries
     queryPolicy.recordQueueSize = recordQueueSize
     queryPolicy.maxConcurrentNodes = maxConcurrentNodes
     queryPolicy.sleepBetweenRetries = sleepBetweenRetries
-
     queryPolicy
   }
 }
@@ -142,7 +143,8 @@ object WriteConfig {
     )
   }
 
-  private[aerospikez] def parseRecordExistsAction(recordExistsAction: String, defaultRecordExistsAction: RecordExistsAction): RecordExistsAction =
+  private[aerospikez] def parseRecordExistsAction(recordExistsAction: String, defaultRecordExistsAction: RecordExistsAction): RecordExistsAction = {
+
     recordExistsAction.toUpperCase match {
       case "UPDATE"       ⇒ RecordExistsAction.UPDATE
       case "UPDATE_ONLY"  ⇒ RecordExistsAction.UPDATE_ONLY
@@ -151,8 +153,10 @@ object WriteConfig {
       case "CREATE_ONLY"  ⇒ RecordExistsAction.CREATE_ONLY
       case _              ⇒ defaultRecordExistsAction
     }
+  }
 
-  private[aerospikez] def parseGenerationPolicy(generationPolicy: String, defaultGenerationPolicy: GenerationPolicy): GenerationPolicy =
+  private[aerospikez] def parseGenerationPolicy(generationPolicy: String, defaultGenerationPolicy: GenerationPolicy): GenerationPolicy = {
+
     generationPolicy.toUpperCase match {
       case "NONE"             ⇒ GenerationPolicy.NONE
       case "DUPLICATE"        ⇒ GenerationPolicy.DUPLICATE
@@ -160,8 +164,10 @@ object WriteConfig {
       case "EXPECT_GEN_EQUAL" ⇒ GenerationPolicy.EXPECT_GEN_EQUAL
       case _                  ⇒ defaultGenerationPolicy
     }
+  }
 
-  private[aerospikez] def parsePriority(priority: String, defaultPriority: Priority): Priority =
+  private[aerospikez] def parsePriority(priority: String, defaultPriority: Priority): Priority = {
+
     priority.toUpperCase match {
       case "DEFAULT" ⇒ Priority.DEFAULT
       case "MEDIUM"  ⇒ Priority.MEDIUM
@@ -169,6 +175,7 @@ object WriteConfig {
       case "LOW"     ⇒ Priority.LOW
       case _         ⇒ defaultPriority
     }
+  }
 }
 
 private[aerospikez] class WriteConfig(
@@ -181,8 +188,7 @@ private[aerospikez] class WriteConfig(
     generationPolicy: GenerationPolicy,
     recordExistsAction: RecordExistsAction) {
 
-  private[aerospikez] def getPolicy() = {
-
+  private[aerospikez] val policy: WritePolicy = {
     val writePolicy = new WritePolicy()
     writePolicy.timeout = timeout
     writePolicy.expiration = expiration
@@ -192,7 +198,6 @@ private[aerospikez] class WriteConfig(
     writePolicy.sleepBetweenRetries = sleepBetweenRetries
     writePolicy.generationPolicy = generationPolicy
     writePolicy.priority = priority
-
     writePolicy
   }
 }

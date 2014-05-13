@@ -1,11 +1,10 @@
-package aerospikez
+package aerospikez.internal
 
 import com.aerospike.client.listener.{ RecordArrayListener, ExistsArrayListener, DeleteListener }
 import com.aerospike.client.listener.{ WriteListener, RecordListener, ExistsListener }
-import com.aerospike.client.{ AerospikeException, Record, Host, Key }
+import com.aerospike.client.{ AerospikeException, Record, Host, Key, Bin ⇒ ABin }
 import com.aerospike.client.policy.{ QueryPolicy, WritePolicy, Policy }
 import com.aerospike.client.async.AsyncClient
-import com.aerospike.client.{ Bin ⇒ ABin }
 
 import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
 
@@ -14,8 +13,8 @@ import scalaz.concurrent.Task
 import scalaz.Free.Trampoline
 import scalaz.Trampoline
 
-import Util.{ pimpAny, pimpJavaMap }
 import Operations._
+import util.Pimp._
 
 private[aerospikez] class SetOps[K](client: AsyncClient) {
 
@@ -33,7 +32,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def put[V](policy: WritePolicy, key: Key, bins: Seq[Bin[V]]): Task[Unit] = {
+  private[aerospikez] def put[V](policy: WritePolicy, key: Key, bins: Seq[aerospikez.Bin[V]]): Task[Unit] = {
     Task.async { register ⇒
       client.put(policy,
         new WriteListener {

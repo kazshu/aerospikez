@@ -42,7 +42,7 @@ class AerospikeClientSpec extends Specification {
 
     "create an async client" in {
 
-      aerospikezInstance.async should beAnInstanceOf[AsyncClient]
+      aerospikezInstance.asyncClient should beAnInstanceOf[AsyncClient]
     }
   }
 

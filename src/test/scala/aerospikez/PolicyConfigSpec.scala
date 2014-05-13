@@ -11,7 +11,7 @@ class ConfigSpec extends Specification {
 
       ConfigFile.file = ConfigFactory.load("reference.conf")
       val file = ConfigFile.file.getConfig("aerospike")
-      val clientPolicy = ClientConfig().getPolicy()
+      val clientPolicy = ClientConfig().policy
 
       clientPolicy.timeout must beEqualTo(
         file.getInt("client-policy.timeout")
@@ -39,7 +39,7 @@ class ConfigSpec extends Specification {
     "use the default values if the configuration file is missing" in {
 
       ConfigFile.file = ConfigFactory.load()
-      val clientPolicy = ClientConfig().getPolicy()
+      val clientPolicy = ClientConfig().policy
 
       clientPolicy.timeout must beEqualTo(0)
       clientPolicy.maxSocketIdle must beEqualTo(14)
@@ -58,7 +58,7 @@ class ConfigSpec extends Specification {
 
       ConfigFile.file = ConfigFactory.load("reference.conf")
       val file = ConfigFile.file.getConfig("aerospike")
-      val queryPolicy = QueryConfig().getPolicy()
+      val queryPolicy = QueryConfig().policy
 
       queryPolicy.timeout must beEqualTo(
         file.getInt("query-policy.timeout")
@@ -80,7 +80,7 @@ class ConfigSpec extends Specification {
     "use the default values if the configuration file is missing" in {
 
       ConfigFile.file = ConfigFactory.load()
-      val queryPolicy = QueryConfig().getPolicy()
+      val queryPolicy = QueryConfig().policy
 
       queryPolicy.timeout must beEqualTo(0)
       queryPolicy.maxRetries must beEqualTo(2)
@@ -96,7 +96,7 @@ class ConfigSpec extends Specification {
 
       ConfigFile.file = ConfigFactory.load("reference.conf")
       val file = ConfigFile.file.getConfig("aerospike")
-      val writePolicy = WriteConfig().getPolicy()
+      val writePolicy = WriteConfig().policy
 
       writePolicy.timeout must beEqualTo(
         file.getInt("write-policy.timeout")
@@ -127,7 +127,7 @@ class ConfigSpec extends Specification {
     "use the default values if the configuration file is missing" in {
 
       ConfigFile.file = ConfigFactory.load()
-      val writePolicy = WriteConfig().getPolicy()
+      val writePolicy = WriteConfig().policy
 
       writePolicy.timeout must beEqualTo(0)
       writePolicy.expiration must beEqualTo(0)

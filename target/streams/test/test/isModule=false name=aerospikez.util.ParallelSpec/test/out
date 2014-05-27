@@ -1,8 +1,0 @@
-[0m[[0minfo[0m] [0mParallelSpec[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37mParallel should[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[32m+[0m run various tasks (Aerospike operations) in parallel and pass each value to a function[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0mTotal for specification ParallelSpec[0m
-[0m[[0minfo[0m] [0m[36mFinished in 1 second, 22 ms[0m[0m
-[0m[[0minfo[0m] [0m[36m[0m[36m1 example, 0 failure, 0 error[0m[0m

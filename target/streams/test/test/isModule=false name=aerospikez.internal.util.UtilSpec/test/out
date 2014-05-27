@@ -1,8 +1,0 @@
-[0m[[0minfo[0m] [0mUtilSpec[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37mtrySome should[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[32m+[0m convert a throw exception to a None and other values to Some(value)[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
-[0m[[0minfo[0m] [0m[37m[0mTotal for specification UtilSpec[0m
-[0m[[0minfo[0m] [0m[36mFinished in 2 ms[0m[0m
-[0m[[0minfo[0m] [0m[36m[0m[36m1 example, 0 failure, 0 error[0m[0m

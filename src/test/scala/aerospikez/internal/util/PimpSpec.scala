@@ -10,16 +10,8 @@ class PimpSpec extends Specification {
 
     "convert a null to a None and other values to Some(value)" in {
 
-      // method work
-      pimpAny(null).toOption must beNone
-
-      // implicit work
       null.asInstanceOf[Any].toOption must beNone
 
-      // method work
-      pimpAny("a word").toOption must beSome("a word")
-
-      // implicit work
       "a word".toOption must beSome("a word")
     }
   }

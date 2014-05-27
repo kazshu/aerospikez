@@ -1,46 +1,61 @@
 package aerospikez
 
-import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
-
+import com.aerospike.client.query.{ Statement, ResultSet, IndexType, RecordSet, Filter ⇒ AFilter }
+import com.aerospike.client.task.{ IndexTask, ExecuteTask, RegisterTask }
 import com.aerospike.client.async.AsyncClient
-import com.aerospike.client.query.Statement
 import com.aerospike.client.policy.Policy
 import com.aerospike.client.{ Value, Key }
 
+import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
 import scala.collection.JavaConversions._
-import scalaz.concurrent.Task
+import scala.collection.JavaConverters._
 
-import internal.util.General._
+import scalaz.concurrent.Task
+import scalaz.Free.Trampoline
+import scalaz.Trampoline
+
+import scalaz.stream.Process
+
 import internal.util.TSafe._
 import internal.util.Pimp._
 import internal.SetOps
-import internal.Ops
+//import Ops
 
-private[aerospikez] class SetOf[@specialized(Int, Long) V](
+private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     namespace: Namespace,
     setName: String,
-    async: AsyncClient,
+    asyncClient: AsyncClient,
     generalPolicy: Policy) {
 
-  private val setOp = new SetOps(async)
   private val queryPolicy = namespace.queryConfig.policy
   private val writePolicy = namespace.writeConfig.policy
+  private val setOp = new SetOps(asyncClient)
 
-  object distinctKey1 { implicit val distinct: distinctKey1.type = this }
-  object distinctKey2 { implicit val distinct: distinctKey2.type = this }
-  object distinctKey3 { implicit val distinct: distinctKey3.type = this }
+  object distinct1 { implicit val distinct: distinct1.type = this }
+  object distinct2 { implicit val distinct: distinct2.type = this }
+  object distinct3 { implicit val distinct: distinct3.type = this }
 
-  private def getKey[K](key: K): Key = {
+  private def createStmt(filter: AFilter): Statement = {
+
+    val stmt: Statement = new Statement()
+    stmt.setNamespace(namespace.name)
+    stmt.setSetName(setName)
+    stmt.setFilters(filter)
+
+    stmt
+  }
+
+  private def parseKey[K](key: K): Key = {
 
     key match {
-      case key: String      ⇒ new Key(namespace.name, setName, key)
       case key: Int         ⇒ new Key(namespace.name, setName, key)
       case key: Long        ⇒ new Key(namespace.name, setName, key)
+      case key: String      ⇒ new Key(namespace.name, setName, key)
       case key: Array[Byte] ⇒ new Key(namespace.name, setName, key)
     }
   }
 
-  private def getValue[V](value: V): Value = {
+  private def parseValue[V](value: V): Value = {
 
     value match {
       case value: Int         ⇒ new Value.IntegerValue(value)
@@ -49,129 +64,152 @@ private[aerospikez] class SetOf[@specialized(Int, Long) V](
       case value: Long        ⇒ new Value.LongValue(value)
       case value: List[_]     ⇒ new Value.ListValue(value)
       case value: Map[_, _]   ⇒ new Value.MapValue(value)
-      case None               ⇒ new Value.NullValue()
+      case None | null        ⇒ new Value.NullValue()
+      case v                  ⇒ new Value.BlobValue(v)
     }
   }
 
-  def execute[K: SupportKey, V, R](
-    key: K,
-    packageName: String,
-    functionName: String,
-    functionArgs: V*)(implicit ev: R DefaultTypeTo Any): Task[Option[R]] = {
+  def execute[K: KRestriction, LuaR](key: K, packageName: String, functionName: String, functionArgs: Any*)(
+    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Task[Option[LuaR]] = {
 
-    Task(
-      trySome(
-        async.execute(
-          generalPolicy,
-          getKey[K](key),
-          packageName,
-          functionName,
-          functionArgs.map(getValue(_)): _*)
-      ).asInstanceOf[Option[R]]
+    setOp.execute[LuaR](generalPolicy, parseKey[K](key), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def execute(filter: AFilter, packageName: String, functionName: String, functionArgs: Any*): Task[Unit] = {
+
+    setOp.execute(generalPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def query(filter: AFilter): Process[Task, OHMap[String, Any]] = {
+
+    setOp.query(queryPolicy, createStmt(filter))
+  }
+
+  def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
+    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Process[Task, LuaR] = {
+
+    setOp.queryAggregate(queryPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def createIndex[I](indexName: String, binName: String)(
+    implicit ev1: I DefaultTypeTo Empty, ev2: I =!= Empty, evIndexType: IRestriction[I]): Task[Unit] = {
+
+    setOp.createIndex(
+      generalPolicy,
+      namespace.name,
+      setName,
+      indexName,
+      binName,
+      evIndexType match {
+        case _: IRestriction.string.type ⇒ IndexType.STRING
+        case _: IRestriction.int.type    ⇒ IndexType.NUMERIC
+      }
     )
   }
 
-  def put[K: SupportKey, V2: SupportValue](
-    key: K,
-    value: V2,
-    bin: String = "")(implicit ev: V2 SubTypeOf V): Task[Unit] = {
+  def dropIndex(indexName: String): Task[Unit] = {
 
-    setOp.put[V2](writePolicy, getKey[K](key), value, bin)
+    setOp.dropIndex(generalPolicy, indexName, namespace.name, setName)
   }
 
-  def putG[K: SupportKey, V2: SupportValue](
-    key: K,
-    value: V2,
-    bin: String = "")(implicit ev: V2 SubTypeOf V): Task[Option[V2]] = {
+  def put[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
+    implicit ev: V SubTypeOf SetV): Task[Unit] = {
 
-    setOp.putG[V2](queryPolicy, writePolicy, getKey[K](key), value, bin)
+    setOp.put[V](writePolicy, parseKey[K](key), value, bin)
   }
 
-  def put[K: SupportKey, V2: SupportValue](
-    key: K,
-    bins: Bin[V2]*)(implicit ev: V2 SubTypeOf V): Task[Unit] = {
+  def putG[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
+    implicit ev: V SubTypeOf SetV): Task[Option[V]] = {
 
-    setOp.put[V2](writePolicy, getKey[K](key), bins)
+    setOp.putG[V](queryPolicy, writePolicy, parseKey[K](key), value, bin)
   }
 
-  def get[K: SupportKey, V2](
-    key: K)(implicit ev: V2 DefaultTypeTo V): Task[Option[V2]] = {
+  def put[K: KRestriction, V: VRestriction](key: K, bins: Bin[V]*)(
+    implicit ev: V SubTypeOf SetV): Task[Unit] = {
 
-    setOp.get[V2](queryPolicy, getKey[K](key), "")
+    setOp.put[V](writePolicy, parseKey[K](key), bins)
   }
 
-  def get[K: SupportKey, V2](
-    key: K, bin: String)(implicit ev: V2 DefaultTypeTo V): Task[Option[V2]] = {
+  def get[K: KRestriction, V](key: K)(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Task[Option[V]] = {
 
-    setOp.get[V2](queryPolicy, getKey[K](key), bin)
+    setOp.get[V](queryPolicy, parseKey[K](key), "")
   }
 
-  def get[K: SupportKey, V2](
-    keys: Array[K])(implicit k: distinctKey1.type, ev: V2 DefaultTypeTo V): Task[OHMap[K, V2]] = {
+  def get[K: KRestriction, V](key: K, bin: String)(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Task[Option[V]] = {
 
-    setOp.get[K, V2](queryPolicy, keys.map(getKey[K](_)), "")
+    setOp.get[V](queryPolicy, parseKey[K](key), bin)
   }
 
-  def get[K: SupportKey, V2](
-    keys: Array[K],
-    bin: String)(implicit k: distinctKey2.type, ev: V2 DefaultTypeTo V): Task[OHMap[K, V2]] = {
+  def get[K: KRestriction, V](key: K, bins: Array[String])(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Task[OHMap[String, V]] = {
 
-    setOp.get[K, V2](queryPolicy, keys.map(getKey[K](_)), bin)
+    setOp.get[V](queryPolicy, parseKey[K](key), bins)
   }
 
-  def get[K: SupportKey, V2](
-    key: K,
-    bins: Array[String])(implicit ev: V2 DefaultTypeTo V): Task[OHMap[String, V2]] = {
+  def get[K: KRestriction, V](keys: Array[K])(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V], ctx: distinct1.type): Task[OHMap[K, V]] = {
 
-    setOp.get[V2](queryPolicy, getKey[K](key), bins)
+    setOp.get[K, V](queryPolicy, keys.map(parseKey[K](_)), "")
   }
 
-  def get[K: SupportKey, V2](
-    keys: Array[K],
-    bins: Array[String])(implicit k: distinctKey3.type, ev: V2 DefaultTypeTo V): Task[OHMap[K, OHMap[String, V]]] = {
+  def get[K: KRestriction, V](keys: Array[K], bin: String)(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V], ctx: distinct2.type): Task[OHMap[K, V]] = {
 
-    setOp.get[K, V](queryPolicy, keys.map(getKey[K](_)), bins)
+    setOp.get[K, V](queryPolicy, keys.map(parseKey[K](_)), bin)
   }
 
-  def delete[@specialized(Int, Long) K: SupportKey](key: K): Task[Unit] = {
+  def get[K: KRestriction, V](keys: Array[K], bins: Array[String])(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V], ctx: distinct3.type): Task[OHMap[K, OHMap[String, V]]] = {
 
-    setOp.delete(writePolicy, getKey[K](key))
+    setOp.get[K, V](queryPolicy, keys.map(parseKey[K](_)), bins)
   }
 
-  def append[K: SupportKey](key: K, value: String, bin: String = ""): Task[Unit] = {
+  def operate[K: KRestriction, V](key: K, operations: Ops*)(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Task[Option[V]] = {
 
-    setOp.append(writePolicy, getKey[K](key), value, bin)
+    setOp.operate[V](writePolicy, parseKey[K](key), operations: _*)
   }
 
-  def prepend[K: SupportKey](key: K, value: String, bin: String = ""): Task[Unit] = {
+  def delete[K: KRestriction](key: K): Task[Unit] = {
 
-    setOp.prepend(writePolicy, getKey[K](key), value, bin)
+    setOp.delete(writePolicy, parseKey[K](key))
   }
 
-  def add[K: SupportKey](key: K, value: Int, bin: String = ""): Task[Unit] = {
+  def touch[K: KRestriction](key: K): Task[Unit] = {
 
-    setOp.add(writePolicy, getKey[K](key), value, bin)
+    setOp.touch(writePolicy, parseKey[K](key))
   }
 
-  def exists[K: SupportKey](key: K): Task[Boolean] = {
+  def exists[K: KRestriction](key: K): Task[Boolean] = {
 
-    setOp.exists(queryPolicy, getKey[K](key))
+    setOp.exists(queryPolicy, parseKey[K](key))
   }
 
-  def exists[K: SupportKey](keys: Array[K])(
-    implicit k: distinctKey1.type): Task[OHMap[K, Boolean]] = {
+  def exists[K: KRestriction](keys: Array[K])(
+    implicit ctx: distinct1.type): Task[OHMap[K, Boolean]] = {
 
-    setOp.exists[K](queryPolicy, keys.map(getKey[K](_)))
+    setOp.exists[K](queryPolicy, keys.map(parseKey[K](_)))
   }
 
-  def getHeader[K: SupportKey](key: K): Task[String] = {
+  def add[K: KRestriction](key: K, value: Int, bin: String = ""): Task[Unit] = {
 
-    setOp.getHeader(queryPolicy, getKey[K](key))
+    setOp.add(writePolicy, parseKey[K](key), value, bin)
   }
 
-  def operate[K: SupportKey, V2](key: K, operations: Ops*)(
-    implicit ev: V2 DefaultTypeTo V): Task[Option[V2]] = {
+  def append[K: KRestriction](key: K, value: String, bin: String = ""): Task[Unit] = {
 
-    setOp.operate[V2](writePolicy, getKey[K](key), operations: _*)
+    setOp.append(writePolicy, parseKey[K](key), value, bin)
+  }
+
+  def prepend[K: KRestriction](key: K, value: String, bin: String = ""): Task[Unit] = {
+
+    setOp.prepend(writePolicy, parseKey[K](key), value, bin)
+  }
+
+  def getHeader[K: KRestriction](key: K): Task[Option[Tuple2[Long, Long]]] = {
+
+    setOp.getHeader(queryPolicy, parseKey[K](key))
   }
 }

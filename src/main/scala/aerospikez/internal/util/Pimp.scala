@@ -1,23 +1,24 @@
 package aerospikez.internal.util
 
 import scala.collection.mutable.{ OpenHashMap ⇒ OHMap }
+import scala.concurrent.duration._
 
 import scalaz.Free.Trampoline
+import scalaz.concurrent.{ Future, Task }
+import scalaz.{ -\/, \/, \/- }
 import scalaz.Trampoline
 
 import java.{ util ⇒ ju }
 
 private[aerospikez] object Pimp {
 
-  class PimpAny[A](val self: A) {
+  implicit class PimpAny[A](val self: A) {
 
     def toOption: Option[A] =
       if (self != null) Some(self) else None
   }
 
-  implicit def pimpAny[A](a: A): PimpAny[A] = new PimpAny(a)
-
-  class PimpJavaMap[K, V](coll: java.util.Map[K, V]) {
+  implicit class PimpJavaMap[K, V](coll: java.util.Map[K, V]) {
 
     private val iterator: ju.Iterator[ju.Map.Entry[K, V]] = coll.entrySet().iterator()
 
@@ -34,6 +35,4 @@ private[aerospikez] object Pimp {
 
     }
   }
-
-  implicit def pimpJavaMap[K, V](coll: java.util.Map[K, V]): PimpJavaMap[K, V] = new PimpJavaMap[K, V](coll)
 }

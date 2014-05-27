@@ -1,0 +1,5 @@
+[0m[[0mdebug[0m] [0mCopy resource mappings: [0m
+[0m[[0mdebug[0m] [0m	(/home/berserk/mis-git/github/aerospikez/src/test/resources/reference.conf,/home/berserk/mis-git/github/aerospikez/target/scala-2.11/test-classes/reference.conf)[0m
+[0m[[0mdebug[0m] [0m	(/home/berserk/mis-git/github/aerospikez/src/test/resources/udf,/home/berserk/mis-git/github/aerospikez/target/scala-2.11/test-classes/udf)[0m
+[0m[[0mdebug[0m] [0m	(/home/berserk/mis-git/github/aerospikez/src/test/resources/udf/sum_example.lua,/home/berserk/mis-git/github/aerospikez/target/scala-2.11/test-classes/udf/sum_example.lua)[0m
+[0m[[0mdebug[0m] [0m	(/home/berserk/mis-git/github/aerospikez/src/test/resources/udf/record_example.lua,/home/berserk/mis-git/github/aerospikez/target/scala-2.11/test-classes/udf/record_example.lua)[0m

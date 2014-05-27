@@ -12,7 +12,7 @@ import com.aerospike.client.cluster.Node
 
 import scalaz.NonEmptyList
 
-import internal.util.General._
+import internal.util.Util._
 import internal.util.TSafe._
 import internal.util.Pimp._
 
@@ -30,7 +30,17 @@ object AerospikeClient {
 
 private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientConfig: ClientConfig, configFile: Config) {
 
-  private val generalPolicy = new Policy { timeout = clientConfig.policy.timeout }
+  private lazy val generalPolicy = new Policy { timeout = clientConfig.policy.timeout }
+
+  private[aerospikez] final val asyncClient: AsyncClient = {
+
+    new AsyncClient(
+      clientConfig.policy,
+      getHosts(configFile, hosts).map {
+        createHost(_, getPort(configFile))
+      }.list: _*
+    )
+  }
 
   def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
     implicit ev: V DefaultTypeTo Any): SetOf[V] = {
@@ -58,30 +68,11 @@ private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientCon
     )
   }
 
-  def isConnected: Boolean = {
+  def isConnected: Boolean = asyncClient.isConnected()
 
-    asyncClient.isConnected()
-  }
+  def getNodes: Array[Node] = asyncClient.getNodes()
 
-  def getNodes: Array[Node] = {
-
-    asyncClient.getNodes()
-  }
-
-  def close: Unit = {
-
-    asyncClient.close()
-  }
-
-  private[aerospikez] final val asyncClient: AsyncClient = {
-
-    new AsyncClient(
-      clientConfig.policy,
-      getHosts(configFile, hosts).map {
-        createHost(_, getPort(configFile))
-      }.list: _*
-    )
-  }
+  def close: Unit = asyncClient.close()
 
   private[aerospikez] def getHosts(configFile: Config, hosts: NonEmptyList[String]): NonEmptyList[String] = {
 
@@ -97,6 +88,7 @@ private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientCon
   }
 
   private[aerospikez] def createHost(host: String, defaultPort: Int): Host = {
+
     host.split(':') match {
       case Array(address, port) ⇒ new Host(address, port.toInt)
       case Array(address)       ⇒ new Host(address, defaultPort)

@@ -1,0 +1,17 @@
+[0m[[0minfo[0m] [0mConfigSpec[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mClientConfig should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the configuration file if exists[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the default values if the configuration file is missing[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mQueryConfig should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the configuration file if exists[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the default values if the configuration file is missing[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mWriteConfig should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the configuration file if exists[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m use the default values if the configuration file is missing[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0mTotal for specification ConfigSpec[0m
+[0m[[0minfo[0m] [0m[36mFinished in 11 ms[0m[0m
+[0m[[0minfo[0m] [0m[36m[0m[36m6 examples, 0 failure, 0 error[0m[0m

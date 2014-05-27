@@ -1,0 +1,8 @@
+#Successful Tests
+#Tue May 27 15:42:41 CLT 2014
+aerospikez.internal.util.UtilSpec=1401219756951
+aerospikez.AerospikeClientSpec=1401219758672
+aerospikez.SetOfSpec=1401219761933
+aerospikez.internal.util.PimpSpec=1401219756396
+aerospikez.ConfigSpec=1401219757691
+aerospikez.util.ParallelSpec=1401219756400

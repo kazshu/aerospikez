@@ -33,26 +33,35 @@ scmInfo := Some(
 // Dependencies //
 
 resolvers ++= Seq(
-  "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-  "Sonatype OSS Releases"  at "http://oss.sonatype.org/content/repositories/releases/"
+  "Scalaz Bintray Repo"   at "http://dl.bintray.com/scalaz/releases",
+  "Typesafe Repository"   at "http://repo.typesafe.com/typesafe/releases/",
+  "Sonatype OSS Releases" at "http://oss.sonatype.org/content/repositories/releases/"
 )
 
 libraryDependencies ++= {
   val scalazV = "7.0.6"
   Seq(
-    "org.scalaz"        %% "scalaz-core"        % scalazV,
     "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
-    "com.aerospike"     %  "aerospike-client"   % "3.0.24",
+    "org.scalaz"        %% "scalaz-core"        % scalazV,
+    "org.scalaz.stream" %% "scalaz-stream"      % "0.4.1",
     "com.typesafe"      %  "config"             % "1.2.1",
+    "org.gnu"           %  "gnu-crypto"         % "2.0.1",
+    "org.luaj"          %  "luaj-jse"           % "3.0-beta2",
     "org.specs2"        %% "specs2"             % "2.3.11"  % "test"
   )
 }
 
 // Settings //
 
+offline := true
+
 scalaVersion := "2.11.0"
 
 crossScalaVersions := Seq("2.10.4", "2.11.0")
+
+compileOrder := CompileOrder.JavaThenScala
+
+incOptions := incOptions.value.withNameHashing(true)
 
 scalacOptions ++= Seq(
   "-feature",

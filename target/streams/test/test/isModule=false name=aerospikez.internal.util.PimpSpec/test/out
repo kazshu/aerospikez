@@ -1,0 +1,11 @@
+[0m[[0minfo[0m] [0mPimpSpec[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mtoOption should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m convert a null to a None and other values to Some(value)[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mtoOpenHashMap should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m convert a java.util.HashMap to a scala.collection.mutable.OpenHashMap[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0mTotal for specification PimpSpec[0m
+[0m[[0minfo[0m] [0m[36mFinished in 171 ms[0m[0m
+[0m[[0minfo[0m] [0m[36m[0m[36m2 examples, 0 failure, 0 error[0m[0m

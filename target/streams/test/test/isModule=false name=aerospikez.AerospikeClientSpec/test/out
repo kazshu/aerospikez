@@ -1,0 +1,22 @@
+[0m[[0minfo[0m] [0mAerospikeClientSpec[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mAn AerospikeClient should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m received a optional hosts list, client config and config file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m create an async client[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mgetPort method should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be take the general port indicated in the configuration file as default port[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be use the 3000 port as default if there are not port indicated in the configuration file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mgetHosts method should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be take the hosts/nodes that are indicated in the configuration file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be use the "localhost" if there are not hosts indicated in the configuration file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37mcreateHosts method should[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be create a host with address and port indicate in the configuration file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m be create host with the address and default port if only the address are indicate in the configuration file[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[32m+[0m throw a exception if the host (string) are bad formed[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0m[37m[0m[0m
+[0m[[0minfo[0m] [0m[37m[0mTotal for specification AerospikeClientSpec[0m
+[0m[[0minfo[0m] [0m[36mFinished in 10 ms[0m[0m
+[0m[[0minfo[0m] [0m[36m[0m[36m9 examples, 0 failure, 0 error[0m[0m

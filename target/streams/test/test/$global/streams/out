@@ -1,0 +1,16 @@
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.util.ParallelSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.internal.util.PimpSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.ConfigSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.internal.util.UtilSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.SetOfSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mRunning TaskDef(aerospikez.AerospikeClientSpec, specs2 Specification fingerprint, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mSummary for ScalaCheck not available.[0m
+[0m[[0mdebug[0m] [0mSummary for specs2 not available.[0m
+[0m[[0minfo[0m] [0mPassed: Total 48, Failed 0, Errors 0, Passed 48[0m
+[0m[[0mdebug[0m] [0mPassed tests:[0m
+[0m[[0mdebug[0m] [0m	aerospikez.AerospikeClientSpec[0m
+[0m[[0mdebug[0m] [0m	aerospikez.internal.util.PimpSpec[0m
+[0m[[0mdebug[0m] [0m	aerospikez.internal.util.UtilSpec[0m
+[0m[[0mdebug[0m] [0m	aerospikez.ConfigSpec[0m
+[0m[[0mdebug[0m] [0m	aerospikez.SetOfSpec[0m
+[0m[[0mdebug[0m] [0m	aerospikez.util.ParallelSpec[0m

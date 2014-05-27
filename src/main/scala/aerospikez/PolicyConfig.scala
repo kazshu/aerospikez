@@ -5,12 +5,10 @@ import com.aerospike.client.async.{ MaxCommandAction, AsyncClientPolicy }
 
 import com.typesafe.config.{ Config, ConfigFactory }
 
-import internal.util.General._
+import internal.util.Util._
 
 private[aerospikez] object ConfigFile {
-
   var file: Config = ConfigFactory.load()
-  val config: Option[Config] = trySome(file.getConfig("aerospike"))
 }
 
 object ClientConfig {
@@ -22,22 +20,34 @@ object ClientConfig {
     asyncSelectorThreads: Int = 1,
     asyncSelectorTimeout: Int = 0,
     sharedThreadPool: Boolean = false,
-    failIfNotConnected: Boolean = true,
+    failIfNotConnected: Boolean = false,
     asyncMaxCommandAction: MaxCommandAction = MaxCommandAction.REJECT): ClientConfig = {
 
-    new ClientConfig(
-      ConfigFile.config.map(_.getInt("client-policy.async-selector-timeout")).getOrElse(asyncSelectorTimeout),
-      ConfigFile.config.map(_.getInt("client-policy.timeout")).getOrElse(timeout),
-      ConfigFile.config.map(_.getInt("client-policy.async-max-commands")).getOrElse(asyncMaxCommands),
-      ConfigFile.config.map(_.getInt("client-policy.max-socket-idle")).getOrElse(maxSocketIdle),
-      ConfigFile.config.map(_.getInt("client-policy.async-selector-threads")).getOrElse(asyncSelectorThreads),
-      ConfigFile.config.map(_.getBoolean("client-policy.shared-thread-pool")).getOrElse(sharedThreadPool),
-      ConfigFile.config.map(_.getBoolean("client-policy.fail-if-not-connected")).getOrElse(failIfNotConnected),
-      ConfigFile.config.map(_.getString("client-policy.async-max-command-action")).map {
-        parseAction(_, asyncMaxCommandAction)
-      }.getOrElse(asyncMaxCommandAction)
+    trySome(ConfigFile.file.getConfig("aerospike.client-policy")).map(c ⇒
+      new ClientConfig(
+        trySome(c.getInt("async-selector-timeout")).getOrElse(asyncSelectorTimeout),
+        trySome(c.getInt("timeout")).getOrElse(timeout),
+        trySome(c.getInt("async-max-commands")).getOrElse(asyncMaxCommands),
+        trySome(c.getInt("max-socket-idle")).getOrElse(maxSocketIdle),
+        trySome(c.getInt("async-selector-threads")).getOrElse(asyncSelectorThreads),
+        trySome(c.getBoolean("shared-thread-pool")).getOrElse(sharedThreadPool),
+        trySome(c.getBoolean("fail-if-not-connected")).getOrElse(failIfNotConnected),
+        trySome(c.getString("async-max-command-action")).map {
+          parseAction(_, asyncMaxCommandAction)
+        }.getOrElse(asyncMaxCommandAction)
+      )
+    ).getOrElse(
+      new ClientConfig(
+        asyncSelectorTimeout,
+        timeout,
+        asyncMaxCommands,
+        maxSocketIdle,
+        asyncSelectorThreads,
+        sharedThreadPool,
+        failIfNotConnected,
+        asyncMaxCommandAction
+      )
     )
-
   }
 
   private[aerospikez] def parseAction(action: String, defaultAction: MaxCommandAction): MaxCommandAction = {
@@ -84,14 +94,23 @@ object QueryConfig {
     maxConcurrentNodes: Int = 0,
     sleepBetweenRetries: Int = 500): QueryConfig = {
 
-    new QueryConfig(
-      ConfigFile.config.map(_.getInt("query-policy.timeout")).getOrElse(timeout),
-      ConfigFile.config.map(_.getInt("query-policy.max-retries")).getOrElse(maxRetries),
-      ConfigFile.config.map(_.getInt("query-policy.record-queue-size")).getOrElse(recordQueueSize),
-      ConfigFile.config.map(_.getInt("query-policy.max-concurrent-nodes")).getOrElse(maxConcurrentNodes),
-      ConfigFile.config.map(_.getInt("query-policy.sleep-between-retries")).getOrElse(sleepBetweenRetries)
+    trySome(ConfigFile.file.getConfig("aerospike.query-policy")).map(c ⇒
+      new QueryConfig(
+        trySome(c.getInt("timeout")).getOrElse(timeout),
+        trySome(c.getInt("max-retries")).getOrElse(maxRetries),
+        trySome(c.getInt("record-queue-size")).getOrElse(recordQueueSize),
+        trySome(c.getInt("max-concurrent-nodes")).getOrElse(maxConcurrentNodes),
+        trySome(c.getInt("sleep-between-retries")).getOrElse(sleepBetweenRetries)
+      )
+    ).getOrElse(
+      new QueryConfig(
+        timeout,
+        maxRetries,
+        recordQueueSize,
+        maxConcurrentNodes,
+        sleepBetweenRetries
+      )
     )
-
   }
 }
 
@@ -125,21 +144,34 @@ object WriteConfig {
     generationPolicy: GenerationPolicy = GenerationPolicy.NONE,
     recordExistsAction: RecordExistsAction = RecordExistsAction.UPDATE): WriteConfig = {
 
-    new WriteConfig(
-      ConfigFile.config.map(_.getInt("write-policy.timeout")).getOrElse(timeout),
-      ConfigFile.config.map(_.getInt("write-policy.expiration")).getOrElse(expiration),
-      ConfigFile.config.map(_.getInt("write-policy.generation")).getOrElse(generation),
-      ConfigFile.config.map(_.getInt("write-policy.max-retries")).getOrElse(maxRetries),
-      ConfigFile.config.map(_.getInt("write-policy.sleep-between-retries")).getOrElse(sleepBetweenRetries),
-      ConfigFile.config.map(_.getString("write-policy.priority")).map {
-        parsePriority(_, priority)
-      }.getOrElse(priority),
-      ConfigFile.config.map(_.getString("write-policy.generation-policy")).map {
-        parseGenerationPolicy(_, generationPolicy)
-      }.getOrElse(generationPolicy),
-      ConfigFile.config.map(_.getString("write-policy.record-exists-action")).map {
-        parseRecordExistsAction(_, recordExistsAction)
-      }.getOrElse(recordExistsAction)
+    trySome(ConfigFile.file.getConfig("aerospike.write-policy")).map(c ⇒
+      new WriteConfig(
+        trySome(c.getInt("write-policy.timeout")).getOrElse(timeout),
+        trySome(c.getInt("write-policy.expiration")).getOrElse(expiration),
+        trySome(c.getInt("write-policy.generation")).getOrElse(generation),
+        trySome(c.getInt("write-policy.max-retries")).getOrElse(maxRetries),
+        trySome(c.getInt("write-policy.sleep-between-retries")).getOrElse(sleepBetweenRetries),
+        trySome(c.getString("write-policy.priority")).map {
+          parsePriority(_, priority)
+        }.getOrElse(priority),
+        trySome(c.getString("write-policy.generation-policy")).map {
+          parseGenerationPolicy(_, generationPolicy)
+        }.getOrElse(generationPolicy),
+        trySome(c.getString("write-policy.record-exists-action")).map {
+          parseRecordExistsAction(_, recordExistsAction)
+        }.getOrElse(recordExistsAction)
+      )
+    ).getOrElse(
+      new WriteConfig(
+        timeout,
+        expiration,
+        generation,
+        maxRetries,
+        sleepBetweenRetries,
+        priority,
+        generationPolicy,
+        recordExistsAction
+      )
     )
   }
 

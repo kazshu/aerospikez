@@ -1,0 +1,52 @@
+language: scala
+
+scala:
+  - 2.10.4
+  - 2.11.0
+
+jdk:
+  - openjdk7
+
+notifications:
+  email:
+    - otrimegistro@gmail.com
+
+before_script:
+  - sudo /etc/init.d/aerospike start
+  - sudo /etc/init.d/aerospike status
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
+
+after_script:
+  - sudo /etc/init.d/aerospike stop
+
+after_success: >
+  test $TRAVIS_BRANCH == master &&
+  test $PUBLISH_ENABLED == true &&
+  test $TRAVIS_PULL_REQUEST == false &&
+  sbt ++$TRAVIS_SCALA_VERSION publish
+
+after_failure:
+  - sudo cat /etc/aerospike/aerospike.conf
+  - sudo cat /var/log/aerospike/aerospike.log
+
+env:
+  global:
+    - PUBLISH_ENABLED=true
+    - secure: |-
+        Hrf3ciRbJDLoCqiv0IuQcT1ZHS71QjlCfPynwyDrEVsoa6W0QqKGctaMSprmEGUyUp8ff3nORHIWHlc8Y7DSuj
+        sL8wSguLEXzNeZZ38dk0RtyZnmV0E45hLfXEgfjJi09uHURRwLn7IAfjl8uPvBwFxm4iQko9qvcmqbm2HN16E=
+    - secure: |-
+        N95FSLeL3VigFEsPa3CiOCnLT3AmQHBR72LoVyFPsv3Czyvds5s1+pHD5nwCq4XF8vbHfMY0h+Ljnf7cjbNeHf
+        w7atcKqE5ma67exxDIEann2by145SCFzkLG73Gl4AAHNrogoMM8xKo9CRTa2BSD4Pr8qBhKljy+3hgPo3tSNU=
+
+before_install:
+  - V="3.2.9"
+  - AEROSPIKE_SERVER="aerospike-community-server-${V}-ubuntu12.04"
+  - wget http://www.aerospike.com/community_downloads/${V}/${AEROSPIKE_SERVER}.tgz
+  - tar xvf ${AEROSPIKE_SERVER}.tgz
+  - sudo dpkg -i ${AEROSPIKE_SERVER}/aerospike-community-server*
+  - rm -rf ${AEROSPIKE_SERVER}*
+  - sudo sed -i s/"pidfile \/var\/run\/aerospike\/asd.pid"/"pidfile \/var\/run\/asd.pid"/ /etc/aerospike/aerospike.conf
+  - sudo sed -i '/reuse-address/a network-interface-name venet0' /etc/aerospike/aerospike.conf

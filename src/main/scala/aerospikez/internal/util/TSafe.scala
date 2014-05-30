@@ -2,8 +2,11 @@ package aerospikez.internal.util
 
 private[aerospikez] object TSafe {
 
+  // Subtype is neccesary for support T <: Any if the user specified a type T
+  // Also none of type that support Aerospike are subtype among themselves,
+  // so this work as expected in the message
   @annotation.implicitNotFound(
-    msg = "That Set has been forced to accept only subtype of ${T2} as Value, but you provide a ${T1}."
+    msg = "That Set has been forced to accept only ${T2} as Value, but you provide a ${T1}."
   )
   sealed class SubTypeOf[T1, T2]
   object SubTypeOf {

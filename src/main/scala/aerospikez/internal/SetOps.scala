@@ -309,12 +309,12 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.getHeader(policy,
         new RecordListener {
           def onSuccess(key: Key, record: Record): Unit = {
-            register(\/-(Trampoline.done(
+            register(\/-(
               if (record != null)
                 Some((record.generation.toLong, record.expiration.toLong))
               else
                 None
-            ).run))
+            ))
           }
           def onFailure(ae: AerospikeException): Unit = {
             register(-\/(ae))
@@ -378,12 +378,12 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           client.operate(policy,
             new RecordListener {
               def onSuccess(key: Key, record: Record): Unit = {
-                register(\/-(Some({
+                register(\/-(
                   if (record != null)
-                    s"gen: ${record.generation}, exp: ${record.expiration}"
+                    Some((record.generation.toLong, record.expiration.toLong).asInstanceOf[V])
                   else
-                    s"record no found"
-                }.asInstanceOf[V])))
+                    None
+                ))
               }
               def onFailure(ae: AerospikeException): Unit = {
                 register(-\/(ae))

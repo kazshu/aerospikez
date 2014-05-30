@@ -271,7 +271,7 @@ class SetOfSpec extends Specification with MapMatchers {
       operate("num", Add(2), Get()).run must beSome(12)
       delete("name").run
       operate("name", Put("Bruce"), GetHeader()).run must beSome.like {
-        case s: String ⇒ s.contains("gen: 1")
+        case t: Tuple2[Long, Long] ⇒ t._1 == 1
       }
       operate("name", Append(" Lee"), Get()).run must beSome("Bruce Lee")
     }

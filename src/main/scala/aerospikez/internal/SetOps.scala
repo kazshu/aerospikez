@@ -323,7 +323,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def getHeader(policy: QueryPolicy, keys: Array[Key]): Task[OHMap[Key, Option[Tuple2[Long, Long]]]] = {
+  private[aerospikez] def getHeader[K](policy: QueryPolicy, keys: Array[Key]): Task[OHMap[K, Option[Tuple2[Long, Long]]]] = {
 
     Task.async { register ⇒
       client.getHeader(policy,
@@ -331,14 +331,14 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
             lazy val length = keys.length
 
-            def getOHMap(m: OHMap[Key, Option[Tuple2[Long, Long]]] = OHMap.empty[Key, Option[Tuple2[Long, Long]]],
-                         i: Int = 0): Trampoline[OHMap[Key, Option[(Long, Long)]]] = {
+            def getOHMap(m: OHMap[K, Option[Tuple2[Long, Long]]] = OHMap.empty[K, Option[Tuple2[Long, Long]]],
+                         i: Int = 0): Trampoline[OHMap[K, Option[(Long, Long)]]] = {
               lazy val rec = records(i)
 
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getOHMap({
-                  m.put(keys(i),
+                  m.put(keys(i).userKey.asInstanceOf[K],
                     if (rec != null)
                       Some((rec.generation.toLong, rec.expiration.toLong))
                     else

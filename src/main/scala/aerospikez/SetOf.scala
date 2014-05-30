@@ -19,7 +19,6 @@ import scalaz.stream.Process
 import internal.util.TSafe._
 import internal.util.Pimp._
 import internal.SetOps
-//import Ops
 
 private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     namespace: Namespace,
@@ -67,49 +66,6 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
       case None | null        ⇒ new Value.NullValue()
       case v                  ⇒ new Value.BlobValue(v)
     }
-  }
-
-  def execute[K: KRestriction, LuaR](key: K, packageName: String, functionName: String, functionArgs: Any*)(
-    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Task[Option[LuaR]] = {
-
-    setOp.execute[LuaR](generalPolicy, parseKey[K](key), packageName, functionName, functionArgs.map(parseValue(_)): _*)
-  }
-
-  def execute(filter: AFilter, packageName: String, functionName: String, functionArgs: Any*): Task[Unit] = {
-
-    setOp.execute(generalPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
-  }
-
-  def query(filter: AFilter): Process[Task, OHMap[String, Any]] = {
-
-    setOp.query(queryPolicy, createStmt(filter))
-  }
-
-  def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
-    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Process[Task, LuaR] = {
-
-    setOp.queryAggregate(queryPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
-  }
-
-  def createIndex[I](indexName: String, binName: String)(
-    implicit ev1: I DefaultTypeTo Empty, ev2: I =!= Empty, evIndexType: IRestriction[I]): Task[Unit] = {
-
-    setOp.createIndex(
-      generalPolicy,
-      namespace.name,
-      setName,
-      indexName,
-      binName,
-      evIndexType match {
-        case _: IRestriction.string.type ⇒ IndexType.STRING
-        case _: IRestriction.int.type    ⇒ IndexType.NUMERIC
-      }
-    )
-  }
-
-  def dropIndex(indexName: String): Task[Unit] = {
-
-    setOp.dropIndex(generalPolicy, indexName, namespace.name, setName)
   }
 
   def put[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
@@ -211,5 +167,53 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
   def getHeader[K: KRestriction](key: K): Task[Option[Tuple2[Long, Long]]] = {
 
     setOp.getHeader(queryPolicy, parseKey[K](key))
+  }
+
+  def getHeader[K: KRestriction](keys: Array[K])(implicit ctx: distinct1.type): Task[OHMap[K, Option[Tuple2[Long, Long]]]] = {
+
+    setOp.getHeader[K](queryPolicy, keys.map(parseKey[K](_)))
+  }
+
+  def execute[K: KRestriction, LuaR](key: K, packageName: String, functionName: String, functionArgs: Any*)(
+    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Task[Option[LuaR]] = {
+
+    setOp.execute[LuaR](generalPolicy, parseKey[K](key), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def execute(filter: AFilter, packageName: String, functionName: String, functionArgs: Any*): Task[Unit] = {
+
+    setOp.execute(generalPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def query(filter: AFilter): Process[Task, OHMap[String, Any]] = {
+
+    setOp.query(queryPolicy, createStmt(filter))
+  }
+
+  def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
+    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Process[Task, LuaR] = {
+
+    setOp.queryAggregate(queryPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
+  }
+
+  def createIndex[I](indexName: String, binName: String)(
+    implicit ev1: I DefaultTypeTo Empty, ev2: I =!= Empty, evIndexType: IRestriction[I]): Task[Unit] = {
+
+    setOp.createIndex(
+      generalPolicy,
+      namespace.name,
+      setName,
+      indexName,
+      binName,
+      evIndexType match {
+        case _: IRestriction.string.type ⇒ IndexType.STRING
+        case _: IRestriction.int.type    ⇒ IndexType.NUMERIC
+      }
+    )
+  }
+
+  def dropIndex(indexName: String): Task[Unit] = {
+
+    setOp.dropIndex(generalPolicy, indexName, namespace.name, setName)
   }
 }

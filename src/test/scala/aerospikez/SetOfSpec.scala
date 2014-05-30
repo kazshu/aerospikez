@@ -266,6 +266,13 @@ class SetOfSpec extends Specification with MapMatchers {
       getHeader("new key").run must beNone
     }
 
+    "getHeader(Keys(<one or more key name>)" >> {
+      put("one", 1).run
+      put("two", 2).run
+      val result = getHeader(Keys("one", "two")).run
+      result must haveKeys("one", "two")
+    }
+
     "operate(<key name>, <write & read Operations>)" >> {
       operate("num", Put(10), Get()).run must beSome(10)
       operate("num", Add(2), Get()).run must beSome(12)

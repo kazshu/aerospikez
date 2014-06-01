@@ -72,18 +72,18 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def get[V](policy: QueryPolicy, key: Key, bin: String): Task[Option[V]] = {
+  private[aerospikez] def get[V](policy: QueryPolicy, key: Key, bin: ⇒ String): Task[Option[V]] = {
 
     Task.async { register ⇒
       client.get(policy,
         new RecordListener {
           def onSuccess(key: Key, record: Record): Unit = {
-            lazy val value = record.getValue(bin)
             register(\/-(
-              if (record != null && value != null)
-                Some(value.asInstanceOf[V])
-              else
-                None
+              Some(record).
+                filter(_ != null).
+                map(_.getValue(bin)).
+                filter(_ != null).
+                asInstanceOf[Option[V]]
             ))
           }
           def onFailure(ae: AerospikeException): Unit = {
@@ -99,9 +99,10 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.get(policy,
         new RecordListener {
           def onSuccess(key: Key, record: Record): Unit = {
+            lazy val _bin = record.bins
             register(\/-(
-              if (record != null && record.bins != null)
-                record.bins.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
+              if (record != null && _bin != null)
+                _bin.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
               else
                 OHMap.empty[String, V]
             ))
@@ -126,12 +127,12 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
             def getMap(m: OHMap[K, V] = OHMap.empty[K, V],
                        i: Int = 0): Trampoline[OHMap[K, V]] = {
               lazy val rec = records(i)
-
+              lazy val _bin = rec.bins
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getMap({
-                  if (rec != null && rec.bins != null) {
-                    rec.bins.toOpenHashMap().run.get(bin).map { userValue ⇒
+                  if (rec != null && _bin != null) {
+                    _bin.toOpenHashMap().run.get(bin).map { userValue ⇒
                       m.put(keys(i).userKey.asInstanceOf[K], userValue.asInstanceOf[V])
                     }
                   }; m
@@ -157,19 +158,20 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
       client.get(policy,
         new RecordArrayListener {
           def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
-            val length = keys.length
+            lazy val length = keys.length
 
             def getMap(m: OHMap[K, OHMap[String, V]] = OHMap.empty[K, OHMap[String, V]],
                        i: Int = 0): Trampoline[OHMap[K, OHMap[String, V]]] = {
+              lazy val _key = keys(i)
               lazy val rec = records(i)
-
+              lazy val _bin = rec.bins
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getMap({
-                  if (keys(i) != null && (rec != null && rec.bins != null)) {
+                  if (_key != null && (rec != null && _bin != null)) {
                     m.put(
-                      keys(i).userKey.asInstanceOf[K],
-                      rec.bins.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
+                      _key.userKey.asInstanceOf[K],
+                      _bin.toOpenHashMap().run.asInstanceOf[OHMap[String, V]]
                     )
                   }; m
                 }, i + 1))
@@ -303,17 +305,17 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def getHeader(policy: QueryPolicy, key: Key): Task[Option[Tuple2[Long, Long]]] = {
+  private[aerospikez] def getHeader(policy: QueryPolicy, key: Key): Task[Option[Tuple2[Int, Int]]] = {
 
     Task.async { register ⇒
       client.getHeader(policy,
         new RecordListener {
           def onSuccess(key: Key, record: Record): Unit = {
             register(\/-(
-              if (record != null)
-                Some((record.generation.toLong, record.expiration.toLong))
-              else
-                None
+              Some(record).
+                filter(_ != null).
+                map(r ⇒ (r.generation, r.expiration)).
+                asInstanceOf[Option[Tuple2[Int, Int]]]
             ))
           }
           def onFailure(ae: AerospikeException): Unit = {
@@ -323,7 +325,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def getHeader[K](policy: QueryPolicy, keys: Array[Key]): Task[OHMap[K, Option[Tuple2[Long, Long]]]] = {
+  private[aerospikez] def getHeader[K](policy: QueryPolicy, keys: Array[Key]): Task[OHMap[K, Tuple2[Int, Int]]] = {
 
     Task.async { register ⇒
       client.getHeader(policy,
@@ -331,21 +333,20 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           def onSuccess(keys: Array[Key], records: Array[Record]): Unit = {
             lazy val length = keys.length
 
-            def getOHMap(m: OHMap[K, Option[Tuple2[Long, Long]]] = OHMap.empty[K, Option[Tuple2[Long, Long]]],
-                         i: Int = 0): Trampoline[OHMap[K, Option[(Long, Long)]]] = {
+            def getOHMap(m: OHMap[K, Tuple2[Int, Int]] = OHMap.empty[K, Tuple2[Int, Int]],
+                         i: Int = 0): Trampoline[OHMap[K, Tuple2[Int, Int]]] = {
               lazy val rec = records(i)
 
               i match {
                 case `length` ⇒ Trampoline.done(m)
                 case _ ⇒ Trampoline.suspend(getOHMap({
-                  m.put(keys(i).userKey.asInstanceOf[K],
-                    if (rec != null)
-                      Some((rec.generation.toLong, rec.expiration.toLong))
-                    else
-                      None);
-                  m
-                },
-                  i + 1))
+                  if (rec != null) {
+                    m.put(
+                      keys(i).userKey.asInstanceOf[K],
+                      (rec.generation, rec.expiration)
+                    )
+                  }; m
+                }, i + 1))
               }
             }
 
@@ -379,10 +380,10 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
             new RecordListener {
               def onSuccess(key: Key, record: Record): Unit = {
                 register(\/-(
-                  if (record != null)
-                    Some((record.generation.toLong, record.expiration.toLong).asInstanceOf[V])
-                  else
-                    None
+                  Some(record).
+                    filter(_ != null).
+                    map(r ⇒ (r.generation, r.expiration)).
+                    asInstanceOf[Option[V]]
                 ))
               }
               def onFailure(ae: AerospikeException): Unit = {
@@ -395,13 +396,12 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
           client.operate(policy,
             new RecordListener {
               def onSuccess(key: Key, record: Record): Unit = {
-                register(\/-({
-                  lazy val value = record.getValue(last.binName)
-                  if (record != null && value != null)
-                    Some(value.asInstanceOf[V])
-                  else
-                    None
-                }))
+                register(\/-(
+                  Some(record).
+                    filter(_ != null).
+                    map(_.getValue(last.binName)).
+                    asInstanceOf[Option[V]]
+                ))
               }
               def onFailure(ae: AerospikeException): Unit = {
                 register(-\/(ae))

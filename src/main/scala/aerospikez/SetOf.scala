@@ -68,20 +68,29 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     }
   }
 
-  def put[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
-    implicit ev: V SubTypeOf SetV): Task[Unit] = {
+  private def parseOption[V](value: V) = {
 
-    setOp.put[V](writePolicy, parseKey[K](key), value, bin)
+    value match {
+      case Some(v) ⇒ v.asInstanceOf[V]
+      case None    ⇒ null.asInstanceOf[V]
+      case _       ⇒ value.asInstanceOf[V]
+    }
+  }
+
+  def put[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
+    implicit ev: V TypeOf SetV): Task[Unit] = {
+
+    setOp.put[V](writePolicy, parseKey[K](key), parseOption[V](value), bin)
   }
 
   def putG[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
-    implicit ev: V SubTypeOf SetV): Task[Option[V]] = {
+    implicit ev: V TypeOf SetV): Task[Option[V]] = {
 
-    setOp.putG[V](queryPolicy, writePolicy, parseKey[K](key), value, bin)
+    setOp.putG[V](queryPolicy, writePolicy, parseKey[K](key), parseOption[V](value), bin)
   }
 
-  def put[K: KRestriction, V: VRestriction](key: K, bins: Bin[V]*)(
-    implicit ev: V SubTypeOf SetV): Task[Unit] = {
+  def put[K: KRestriction, V](key: K, bins: Bin[V]*)(
+    implicit ev: V TypeOf SetV): Task[Unit] = {
 
     setOp.put[V](writePolicy, parseKey[K](key), bins)
   }
@@ -92,7 +101,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     setOp.get[V](queryPolicy, parseKey[K](key), "")
   }
 
-  def get[K: KRestriction, V](key: K, bin: String)(
+  def get[K: KRestriction, V](key: K, bin: ⇒ String)(
     implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Task[Option[V]] = {
 
     setOp.get[V](queryPolicy, parseKey[K](key), bin)
@@ -110,7 +119,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     setOp.get[K, V](queryPolicy, keys.map(parseKey[K](_)), "")
   }
 
-  def get[K: KRestriction, V](keys: Array[K], bin: String)(
+  def get[K: KRestriction, V](keys: Array[K], bin: ⇒ String)(
     implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V], ctx: distinct2.type): Task[OHMap[K, V]] = {
 
     setOp.get[K, V](queryPolicy, keys.map(parseKey[K](_)), bin)
@@ -164,12 +173,12 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     setOp.prepend(writePolicy, parseKey[K](key), value, bin)
   }
 
-  def getHeader[K: KRestriction](key: K): Task[Option[Tuple2[Long, Long]]] = {
+  def getHeader[K: KRestriction](key: K): Task[Option[Tuple2[Int, Int]]] = {
 
     setOp.getHeader(queryPolicy, parseKey[K](key))
   }
 
-  def getHeader[K: KRestriction](keys: Array[K])(implicit ctx: distinct1.type): Task[OHMap[K, Option[Tuple2[Long, Long]]]] = {
+  def getHeader[K: KRestriction](keys: Array[K])(implicit ctx: distinct1.type): Task[OHMap[K, Tuple2[Int, Int]]] = {
 
     setOp.getHeader[K](queryPolicy, keys.map(parseKey[K](_)))
   }

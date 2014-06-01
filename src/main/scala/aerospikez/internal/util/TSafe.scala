@@ -2,19 +2,21 @@ package aerospikez.internal.util
 
 private[aerospikez] object TSafe {
 
-  // Subtype is neccesary for support T <: Any if the user specified a type T
-  // Also none of type that support Aerospike are subtype among themselves,
-  // so this work as expected in the message
   @annotation.implicitNotFound(
-    msg = "That Set has been forced to accept only ${T2} as Value, but you provide a ${T1}."
+    msg = """
+    That Set has been forced to accept only ${T2} (or a Option[${T2}]) as Value, but you provide a ${T1}:
+    """
   )
-  sealed class SubTypeOf[T1, T2]
-  object SubTypeOf {
-    implicit def f[T1, T2](implicit ev: T1 <:< T2): SubTypeOf[T1, T2] = new SubTypeOf[T1, T2]
+  sealed class TypeOf[T1, T2]
+  object TypeOf {
+    implicit def f1[T1, T2](implicit ev: T1 <:< T2): TypeOf[T1, T2] = new TypeOf[T1, T2]
+    implicit def f2[T1, T2](implicit ev: T1 =:= Option[T2]): TypeOf[T1, T2] = new TypeOf[T1, T2]
   }
 
   @annotation.implicitNotFound(
-    msg = "Aaerospike support only String, Int, Long and Array[Byte] as Key, but you provide a ${K}."
+    msg = """
+    Aaerospike support only String, Int, Long and Array[Byte] as Key, but you provide a ${K}:
+    """
   )
   sealed trait KRestriction[K]
   object KRestriction {
@@ -25,22 +27,27 @@ private[aerospikez] object TSafe {
   }
 
   @annotation.implicitNotFound(
-    msg = "Aaerospike support only String, Int, Long, Map and List as Value, but you provide a ${V}."
+    msg = """
+    Aaerospike support only String, Int, Long, Map and List as Value (or a Option[T] where T is any type described above), but you provide a ${V}:
+    """
   )
   sealed class VRestriction[V]
   object VRestriction {
     implicit object int extends VRestriction[Int]
     implicit object long extends VRestriction[Long]
     implicit object string extends VRestriction[String]
-    implicit def list[A]: VRestriction[List[A]] = new VRestriction[List[A]]
-    implicit def map[A, B]: VRestriction[Map[A, B]] = new VRestriction[Map[A, B]]
+    implicit def list[A: VRestriction]: VRestriction[List[A]] = new VRestriction[List[A]]
+    implicit def option[A: VRestriction]: VRestriction[Option[A]] = new VRestriction[Option[A]]
+    implicit def map[A: VRestriction, B: VRestriction]: VRestriction[Map[A, B]] = new VRestriction[Map[A, B]]
 
     // This is necessary only if the user no specified a type argument (default to Any)
     implicit object any extends VRestriction[Any]
   }
 
   @annotation.implicitNotFound(
-    msg = "Aerospike support only Long, String, Map and List as Lua Type Result, but you provide a ${LuaV}"
+    msg = """
+    Aerospike support only Long, String, Map and List as Lua Type Result, but you provide a ${LuaV}:
+    """
   )
   sealed class LRestriction[LuaV]
   object LRestriction {
@@ -54,7 +61,9 @@ private[aerospikez] object TSafe {
   }
 
   @annotation.implicitNotFound(
-    msg = "Aerospike support only Int and String as Type for Secondary Index, but you provide a ${I}"
+    msg = """
+    Aerospike support only Int and String as Type for Secondary Index, but you provide a ${I}:
+    """
   )
   sealed class IRestriction[I]
   object IRestriction {
@@ -63,7 +72,11 @@ private[aerospikez] object TSafe {
   }
 
   trait Empty
-  @annotation.implicitNotFound(msg = "An explicit type parameter is required.")
+  @annotation.implicitNotFound(
+    msg = """
+    An explicit type parameter is required.
+    """
+  )
   sealed trait =!=[T1, T2]
   object =!= {
     class Impl[T1, T2]

@@ -259,7 +259,7 @@ class SetOfSpec extends Specification with MapMatchers {
       delete("new key").run
       put("new key", "new value").run
       getHeader("new key").run must beSome.like {
-        case t: Tuple2[Long, Long] ⇒ t._1 == 1
+        case t: Tuple2[Int, Int] ⇒ t._1 == 1
       }
 
       delete("new key").run
@@ -278,7 +278,7 @@ class SetOfSpec extends Specification with MapMatchers {
       operate("num", Add(2), Get()).run must beSome(12)
       delete("name").run
       operate("name", Put("Bruce"), GetHeader()).run must beSome.like {
-        case t: Tuple2[Long, Long] ⇒ t._1 == 1
+        case t: Tuple2[Int, Int] ⇒ t._1 == 1
       }
       operate("name", Append(" Lee"), Get()).run must beSome("Bruce Lee")
     }

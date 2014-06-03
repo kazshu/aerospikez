@@ -47,7 +47,7 @@ libraryDependencies ++= {
     "com.typesafe"      %  "config"             % "1.2.1",
     "org.gnu"           %  "gnu-crypto"         % "2.0.1",
     "org.luaj"          %  "luaj-jse"           % "3.0-beta2",
-    "org.specs2"        %% "specs2"             % "2.3.11"  % "test"
+    "org.specs2"        %% "specs2"             % "2.3.12"  % "test"
   )
 }
 
@@ -55,9 +55,9 @@ libraryDependencies ++= {
 
 offline := true
 
-scalaVersion := "2.11.0"
+scalaVersion := "2.11.1"
 
-crossScalaVersions := Seq("2.10.4", "2.11.0")
+crossScalaVersions := Seq("2.10.4", "2.11.1")
 
 compileOrder := CompileOrder.JavaThenScala
 

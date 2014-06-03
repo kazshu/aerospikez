@@ -1,6 +1,7 @@
 package aerospikez
 
 import com.aerospike.client.{ Operation, Bin ⇒ ABin }
+import aerospikez.internal.util.TSafe.VRestriction
 
 trait Ops {
 
@@ -9,35 +10,35 @@ trait Ops {
 
 object Operations {
 
-  case class Prepend(value: String, binName: String = "") extends Ops {
-    def toOperation = Operation.prepend(new ABin(binName, value))
+  case class prepend(binName: String, value: String) extends Ops {
+    @inline def toOperation = Operation.prepend(new ABin(binName, value))
   }
 
-  case class Append(value: String, binName: String = "") extends Ops {
-    def toOperation = Operation.append(new ABin(binName, value))
+  case class append(binName: String, value: String) extends Ops {
+    @inline def toOperation = Operation.append(new ABin(binName, value))
   }
 
-  case class Put[V](value: V, val binName: String = "") extends Ops {
-    def toOperation = Operation.put(new ABin(binName, value))
+  case class put[V: VRestriction](binName: String, value: V) extends Ops {
+    @inline def toOperation = Operation.put(new ABin(binName, value))
   }
 
-  case class Add(value: Int, binName: String = "") extends Ops {
-    def toOperation = Operation.add(new ABin(binName, value))
+  case class add(binName: String, value: Int) extends Ops {
+    @inline def toOperation = Operation.add(new ABin(binName, value))
   }
 
-  case class Get(val binName: String = "") extends Ops {
-    def toOperation = Operation.get(binName)
+  case class get(binName: String = "") extends Ops {
+    @inline def toOperation = Operation.get(binName)
   }
 
-  case class GetAll() extends Ops {
-    def toOperation = Operation.get()
+  case class getAll() extends Ops {
+    @inline def toOperation = Operation.get()
   }
 
-  case class GetHeader() extends Ops {
-    def toOperation = Operation.getHeader()
+  case class getHeader() extends Ops {
+    @inline def toOperation = Operation.getHeader()
   }
 
-  case class Touch() extends Ops {
-    def toOperation = Operation.touch()
+  case class touch() extends Ops {
+    @inline def toOperation = Operation.touch()
   }
 }

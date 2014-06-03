@@ -7,7 +7,7 @@ import org.specs2.matcher.MapMatchers
 
 import scala.collection.mutable.OpenHashMap
 
-import Operations._
+import aerospikez.Operations
 
 class SetOfSpec extends Specification with MapMatchers {
   sequential
@@ -274,13 +274,13 @@ class SetOfSpec extends Specification with MapMatchers {
     }
 
     "operate(<key name>, <write & read Operations>)" >> {
-      operate("num", Put(10), Get()).run must beSome(10)
-      operate("num", Add(2), Get()).run must beSome(12)
+      operate("example", Operations.put("num", 10), Operations.get("num")).run must beSome(10)
+      operate("example", Operations.add("num", 2), Operations.get("num")).run must beSome(12)
       delete("name").run
-      operate("name", Put("Bruce"), GetHeader()).run must beSome.like {
+      operate("name", Operations.put("person1", "Bruce"), Operations.getHeader()).run must beSome.like {
         case t: Tuple2[Int, Int] ⇒ t._1 == 1
       }
-      operate("name", Append(" Lee"), Get()).run must beSome("Bruce Lee")
+      operate("name", Operations.append("person1", " Lee"), Operations.get("person1")).run must beSome("Bruce Lee")
     }
 
     "createIndex[Type](<index name>, <bin name>)" >> {

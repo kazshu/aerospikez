@@ -89,10 +89,10 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     setOp.putG[V](queryPolicy, writePolicy, parseKey[K](key), parseOption[V](value), bin)
   }
 
-  def put[K: KRestriction, V](key: K, bins: Bin[V]*)(
+  def put[K: KRestriction, V](key: K, bin: Bin[V], bins: Bin[V]*)(
     implicit ev: V TypeOf SetV): Task[Unit] = {
 
-    setOp.put[V](writePolicy, parseKey[K](key), bins)
+    setOp.put[V](writePolicy, parseKey[K](key), Seq(bin) ++ bins)
   }
 
   def get[K: KRestriction, V](key: K)(

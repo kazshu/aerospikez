@@ -362,7 +362,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
   private[aerospikez] def operate[V](policy: WritePolicy, key: Key, operations: Ops*): Task[Option[V]] = {
 
     operations.last match {
-      case _: Touch | _: Append | _: Put[V] | _: Prepend | _: Add ⇒
+      case _: touch | _: append | _: put[V] | _: prepend | _: add ⇒
         Task.async { register ⇒
           client.operate(policy,
             new RecordListener {
@@ -374,7 +374,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               }
             }, key, operations.map(_.toOperation): _*)
         }
-      case _: GetHeader ⇒
+      case _: getHeader ⇒
         Task.async { register ⇒
           client.operate(policy,
             new RecordListener {
@@ -391,7 +391,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
               }
             }, key, operations.map(_.toOperation): _*)
         }
-      case last: Get ⇒
+      case last: get ⇒
         Task.async { register ⇒
           client.operate(policy,
             new RecordListener {

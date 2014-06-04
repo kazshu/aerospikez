@@ -400,6 +400,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
                   Some(record).
                     filter(_ != null).
                     map(_.getValue(last.binName)).
+                    filter(_ != null).
                     asInstanceOf[Option[V]]
                 ))
               }
@@ -503,15 +504,8 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def dropIndex(policy: Policy, indexName: String, nsName: String, setName: String): Task[Unit] = {
+  private[aerospikez] def dropIndex(policy: Policy, indexName: String, nsName: String, setName: String): Unit = {
 
-    Task.delay {
-      client.dropIndex(
-        policy,
-        nsName,
-        setName,
-        indexName
-      )
-    }
+    client.dropIndex(policy, nsName, setName, indexName)
   }
 }

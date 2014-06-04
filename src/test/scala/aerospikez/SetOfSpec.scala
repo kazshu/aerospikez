@@ -320,17 +320,17 @@ class SetOfSpec extends Specification with MapMatchers {
         )
     }
 
-    "queryAggregate(<a Filter>, <package name>, <function name>, <function arguments>)" >> {
+    "queryAggregate[T](<a Filter>, <package name>, <function name>, <function arguments>)" >> {
       put("one", Bin("num", 1)).run
       put("two", Bin("num", 2)).run
-      queryAggregate(
+      queryAggregate[Long](
         Filter.range("num", 1, 3), "sum_example", "sum_single_bin", "num"
       ).runLog.run must contain(3)
     }
 
     "dropIndex(<index name>)" >> {
-      dropIndex("index1").run must beEqualTo(())
-      dropIndex("index2").run must beEqualTo(())
+      dropIndex("index1") must beEqualTo(())
+      dropIndex("index2") must beEqualTo(())
     }
   }
 

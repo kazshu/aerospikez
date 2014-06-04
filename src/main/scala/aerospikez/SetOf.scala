@@ -200,7 +200,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
   }
 
   def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
-    implicit ev1: LuaR DefaultTypeTo Any, ev2: LRestriction[LuaR]): Process[Task, LuaR] = {
+    implicit ev1: LuaR DefaultTypeTo Empty, ev2: LuaR =!= Empty, ev3: LRestriction[LuaR]): Process[Task, LuaR] = {
 
     setOp.queryAggregate(queryPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*)
   }
@@ -221,7 +221,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     )
   }
 
-  def dropIndex(indexName: String): Task[Unit] = {
+  def dropIndex(indexName: String): Unit = {
 
     setOp.dropIndex(generalPolicy, indexName, namespace.name, setName)
   }

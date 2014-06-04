@@ -39,15 +39,15 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val scalazV = "7.0.6"
+  val scalazV = "7.1.0-M6"
   Seq(
-    "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
     "org.scalaz"        %% "scalaz-core"        % scalazV,
-    "org.scalaz.stream" %% "scalaz-stream"      % "0.4.1",
+    "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
+    "org.scalaz.stream" %% "scalaz-stream"      % "0.4.1a",
     "com.typesafe"      %  "config"             % "1.2.1",
     "org.gnu"           %  "gnu-crypto"         % "2.0.1",
     "org.luaj"          %  "luaj-jse"           % "3.0-beta2",
-    "org.specs2"        %% "specs2"             % "2.3.12"  % "test"
+    "org.specs2"        %% "specs2"             % "2.3.12-scalaz-7.1.0-M6"  % "test"
   )
 }
 
@@ -55,9 +55,7 @@ libraryDependencies ++= {
 
 offline := true
 
-scalaVersion := "2.11.1"
-
-crossScalaVersions := Seq("2.10.4", "2.11.1")
+scalaVersion := "2.10.4"
 
 compileOrder := CompileOrder.JavaThenScala
 

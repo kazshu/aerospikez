@@ -46,10 +46,14 @@ Also the philosophy:
 ## Guide
 
 [Before Start](guide/before_start.md)
+
 [Connection Management](guide/connection_management.md)
-[Creating a Set](creating_set.md)
-[Working with Key Value Store](key_value_store.md)
-[Working with User Define Funtions](user_define_function.md)
+
+[Creating a Set](guide/creating_set.md)
+
+[Working with Key Value Store](guide/key_value_store.md)
+
+[Working with User Define Funtions](guide/user_define_function.md)
 
 ## License
 

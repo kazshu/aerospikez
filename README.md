@@ -45,15 +45,28 @@ Also the philosophy:
 
 ## Guide
 
-[Before Start](guide/before_start.md)
-
-[Connection Management](guide/connection_management.md)
-
-[Creating a Set](guide/creating_set.md)
-
-[Working with Key Value Store](guide/key_value_store.md)
-
-[Working with User Define Funtions](guide/user_define_function.md)
+- [Before Start](guide/before_start.md)
+- [Cluster Connection Management](guide/connection_management.md)
+  - [Connecting](guide/connection_management.md#connecting)
+  - [Connection Check](guide/connection_management.md#connection-check)
+  - [Listing active server nodes](guide/connection_management.md#listing-active-server-nodes)
+  - [Close Connection](guide/connection_management.md#close-connection)
+- [Set Creation](guide/creating_set.md)
+- [Key Value Store](guide/key_value_store.md)
+  - [Write Record](guide/key_value_store.md#write-record-operations)
+  - [Read Record](guide/key_value_store.md#read-record-operations)
+  - [Existence-Check](guide/key_value_store.md#existence-check-operations)
+  - [Touch Record](guide/key_value_store.md#touch-operations)
+  - [Delete Record](guide/key_value_store.md#delete-operations)
+  - [Arithmetic Operations](guide/key_value_store.md#arithmetic-operations)
+  - [String Operations](guide/key_value_store.md#string-operations)
+  - [Generic Database Operations](guide/key_value_store.md#generic-database-operations)
+- [Working with Lua UDF](guide/user_define_function.md)
+  - [Register the UDF](guide/user_define_function.md#register-the-udf)
+  - [Create a Index](guide/user_define_function.md#create-a-secondary-index)
+  - [Execute](guide/user_define_function.md#execute)
+  - [Query](guide/user_define_function.md#query)
+  - [Aggregation](guide/user_define_function.md#aggregation)
 
 ## License
 

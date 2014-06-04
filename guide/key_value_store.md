@@ -1,8 +1,8 @@
-## Working with Key Value Store
+# Working with Key Value Store
 
 All operations are a Scalaz `Task`
 
-### Write Record Operations
+## Write Record Operations
 
 - put
 ```scala
@@ -32,7 +32,7 @@ set.putG(user_id, "Bruce", "name").run           // None
 set.putG(user_id, "Bruce Lee", "name").run       // Some(Bruce)
 ```
 
-### Read Record Operations
+## Read Record Operations
 
 - get
 ```scala
@@ -84,7 +84,7 @@ set.getHeader("two").run                         // Some(1, 139517791)
 set.getHeader(Keys("one", "two")).run            // OpenHashMap(two -> Some((1,141756487)), one -> Some((1,139517791)))
 ```
 
-### Existence-Check Operations
+## Existence Check Operations
 
 - exists
 ```scala
@@ -97,7 +97,7 @@ set.exists("three").run                          // false
 set.exists(Keys("one", "three").run              // OpenHashMap(three -> false, one -> true)
 ```
 
-### Touch Operations
+## Touch Operations
 
 - touch
 ```scala
@@ -107,7 +107,7 @@ set.touch("key").run                             // Unit
 set.getHeader("key").run                         // Some((2,142093306))
 ```
 
-### Delete Operations
+## Delete Operations
 
 - delete
 ```scala
@@ -117,7 +117,7 @@ set.delete("one").run                            // Unit
 set.exists("one").run                            // false
 ```
 
-### Arithmetic Operations
+## Arithmetic Operations
 
 - add
 ```scala
@@ -127,7 +127,7 @@ set.add("two", 1).run                            // Unit
 set.get("two").run                               // Some(2)
 ```
 
-### String Operations
+## String Operations
 
 - append
 ```scala
@@ -145,7 +145,7 @@ set.prepend("example2", "hello ").run            // Unit
 set.get("example2").run                          // Some(hello world!)
 ```
 
-### Generic Database Operations
+## Generic Database Operations
 
 - operate
 ```scala

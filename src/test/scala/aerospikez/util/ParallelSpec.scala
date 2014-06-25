@@ -13,7 +13,7 @@ import scalaz._, Scalaz._
 class ParallelSpec extends Specification {
 
   val client = AerospikeClient()
-  val set = client.setOf[Int](Namespace())
+  val set = client.setOf[Int](Namespace("test"), name = "set")
 
   def afterTest = client.close
 

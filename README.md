@@ -10,15 +10,9 @@ Built against:
 - Scalaz 7.1.0-M6
 - Scalaz Stream 0.4.1a
 
-Integration test against Aerospike Server 3.2.9
+Integration test against Aerospike Server 3.3.5
 
 ## Installation
-
-#### Latest Version
-
-No`release available for now.
-
-#### Snapshot Version
 
 Add the following to your SBT build:
 ``` scala

@@ -100,8 +100,6 @@ public final class LuaInstance {
 		}
 		
 		Prototype prototype = LuaCache.loadPackage(packageName, system);
-    //System.out.println("prototype from LuaCache.loadPackage(packageName, system)");
-    //System.out.println(prototype);
 		LuaClosure function = new LuaClosure(prototype, globals);
 		function.invoke();
 		

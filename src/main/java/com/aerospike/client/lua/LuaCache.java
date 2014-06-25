@@ -39,7 +39,7 @@ public final class LuaCache {
 	
 	public static final LuaInstance getInstance() throws AerospikeException {
 		LuaInstance instance = InstanceQueue.poll();
- 	  return (instance != null)? instance : new LuaInstance();
+		return (instance != null)? instance : new LuaInstance();
 	}
 			
 	public static final void putInstance(LuaInstance instance) {
@@ -68,17 +68,12 @@ public final class LuaCache {
 
 	private static InputStream getSystemStream(String packageName) throws AerospikeException {
 		String path = "udf/" + packageName + ".lua";
+		
 		try {
-
-      // Bueno: ClassLoader loader = LuaCache.class.getClassLoader();
-      // Bueno: InputStream is = loader.getResourceAsStream(path);
-
-      //InputStream is = ClassLoader.getSystemResourceAsStream(path);
-
       ClassLoader loader = LuaCache.class.getClassLoader();
-      InputStream is = null;
-
-      if (loader != null) {
+			InputStream is = null;
+			
+      if(loader != null) {
         is = loader.getResourceAsStream(path);
       } else {
         is = ClassLoader.getSystemResourceAsStream(path);

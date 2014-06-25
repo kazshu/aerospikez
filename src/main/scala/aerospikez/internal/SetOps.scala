@@ -500,7 +500,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
         indexType
       )
 
-      t.waitTillComplete(200)
+      t.waitTillComplete(400)
     }
   }
 

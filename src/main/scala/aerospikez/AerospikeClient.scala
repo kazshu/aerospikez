@@ -42,7 +42,7 @@ private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientCon
     )
   }
 
-  def setOf[V](namespace: Namespace = Namespace(), name: String = "myset")(
+  def setOf[V](namespace: Namespace, name: String)(
     implicit ev1: V DefaultTypeTo Any, ev2: VRestriction[V]): SetOf[V] = {
 
     new SetOf[V](namespace, name, this.asyncClient, generalPolicy)

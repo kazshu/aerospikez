@@ -86,8 +86,7 @@ public final class QueryAggregateExecutor extends QueryExecutor implements Runna
 
 	public void runThreads() throws AerospikeException {		
 		lua = LuaCache.getInstance();
-    //System.out.println("lua instance: ");
-		//System.out.println(lua);
+		
 		// Start thread queries to each node.
 		startThreads();		
 

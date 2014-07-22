@@ -16,7 +16,10 @@ Integration test against Aerospike Server 3.3.5
 
 Add the following to your SBT build:
 ``` scala
-resolvers += "Sonatype OSS Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/"
+resolvers ++= Seq(
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Scalaz Bintray Repo"    at "http://dl.bintray.com/scalaz/releases"
+)
 
 libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.1-SNAPSHOT"
 ```

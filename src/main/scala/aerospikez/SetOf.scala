@@ -18,6 +18,7 @@ import scalaz.stream.Process
 
 import internal.util.TSafe._
 import internal.util.Pimp._
+import internal.util.Util._
 import internal.SetOps
 
 private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
@@ -29,10 +30,6 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
   private val queryPolicy = namespace.queryConfig.policy
   private val writePolicy = namespace.writeConfig.policy
   private val setOp = new SetOps(asyncClient)
-
-  object distinct1 { implicit val distinct: distinct1.type = this }
-  object distinct2 { implicit val distinct: distinct2.type = this }
-  object distinct3 { implicit val distinct: distinct3.type = this }
 
   private def createStmt(filter: AFilter): Statement = {
 
@@ -68,15 +65,6 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     }
   }
 
-  private def parseOption[V](value: V) = {
-
-    value match {
-      case Some(v) ⇒ v.asInstanceOf[V]
-      case None    ⇒ null.asInstanceOf[V]
-      case _       ⇒ value.asInstanceOf[V]
-    }
-  }
-
   def put[K: KRestriction, V: VRestriction](key: K, value: V, bin: String = "")(
     implicit ev: V TypeOf SetV): Task[Unit] = {
 
@@ -89,10 +77,10 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
     setOp.putG[V](queryPolicy, writePolicy, parseKey[K](key), parseOption[V](value), bin)
   }
 
-  def put[K: KRestriction, V](key: K, bin: Bin[V], bins: Bin[V]*)(
+  def put[K: KRestriction, V](key: K, bins: Tuple2[String, V]*)(
     implicit ev: V TypeOf SetV): Task[Unit] = {
 
-    setOp.put[V](writePolicy, parseKey[K](key), Seq(bin) ++ bins)
+    setOp.put[V](writePolicy, parseKey[K](key), bins)
   }
 
   def get[K: KRestriction, V](key: K)(

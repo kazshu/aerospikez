@@ -5,6 +5,7 @@ import scalaz.NonEmptyList
 package object aerospikez {
 
   import internal.util.TSafe._
+  import internal.util.Util._
 
   val Keys = NonEmptyArray
   val Bins = NonEmptyArray
@@ -16,8 +17,18 @@ package object aerospikez {
     }
   }
 
-  case class Bin[+V: VRestriction](_1: String, _2: V) extends Product2[String, V] {
-    override def toString() = "(" + _1 + "," + _2 + ")"
+  object Bin {
+    def apply[V: VRestriction](binName: String, value: V)(
+      implicit ctx: distinct1.type) = {
+
+      Tuple2(binName, value)
+    }
+
+    def apply[V](binName: String, value: Option[V])(
+      implicit ctx: distinct2.type, ev2: VRestriction[V]) = {
+
+      Tuple2(binName, parseOption(value).asInstanceOf[V])
+    }
   }
 
   object Filter {

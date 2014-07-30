@@ -41,7 +41,7 @@ private[aerospikez] class SetOps[K](client: AsyncClient) {
     }
   }
 
-  private[aerospikez] def put[V](policy: WritePolicy, key: Key, bins: Seq[aerospikez.Bin[V]]): Task[Unit] = {
+  private[aerospikez] def put[V](policy: WritePolicy, key: Key, bins: Seq[Tuple2[String, V]]): Task[Unit] = {
 
     Task.async { register ⇒
       client.put(policy,

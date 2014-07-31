@@ -14,8 +14,8 @@ private[aerospikez] object ConfigFile {
 object ClientConfig {
 
   def apply(
-    timeout: Int = 1000,
-    asyncMaxCommands: Int = 200,
+    timeout: Int = 0,
+    asyncMaxCommands: Int = 400,
     maxSocketIdle: Int = 14,
     asyncSelectorThreads: Int = 1,
     asyncSelectorTimeout: Int = 0,

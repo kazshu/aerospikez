@@ -1,28 +1,36 @@
 # aerospikez - Aerospike v3 Scala Client
 
-aerospikez is under development, which aims to be a fast, asynchronous, concise,
-composable and type safe Scala Client for [Aerospike](http://www.aerospike.com/) v3.
+aerospikez is a fast, asynchronous, concise, composable and type safe Scala Client for [Aerospike](http://www.aerospike.com/) v3.
 
-## Current Status [![Build Status](https://secure.travis-ci.org/otrimegistro/aerospikez.png)](http://travis-ci.org/otrimegistro/aerospikez)
+## Installation
 
-Built against:
+### Release Version
+
+[Build](https://travis-ci.org/otrimegistro/aerospikez/builds/31360577) against:
 - Scala 2.10.4
 - Scalaz 7.1.0-M6
 - Scalaz Stream 0.4.1a
 
-Integration test against Aerospike Server 3.3.9
+```scala
+resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
-## Installation
+libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.1"
+```
 
-Add the following to your SBT build:
-``` scala
+### Snapshot Version
+
+[![Build Status](https://secure.travis-ci.org/otrimegistro/aerospikez.png)](http://travis-ci.org/otrimegistro/aerospikez)
+[![Stories in Ready](https://badge.waffle.io/otrimegistro/aerospikez.png?label=Ready)](https://waffle.io/otrimegistro/aerospikez)
+
+```scala
 resolvers ++= Seq(
   "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
   "Scalaz Bintray Repo"    at "http://dl.bintray.com/scalaz/releases"
 )
 
-libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.1-SNAPSHOT"
+libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.2-SNAPSHOT"
 ```
+
 ## Library Design & Philosophy
 
 This is a wrapper over the aerospike java client, which tries to take advantage from Scalaz & Scalaz Stream

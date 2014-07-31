@@ -65,6 +65,22 @@ class SetOfSpec extends Specification with MapMatchers {
     "put(<key name>, <one or more Bin(<bin name>, <value>)>)" >> {
       put("example1", Bin("one", 1), Bin("two", 2)).run must beEqualTo(())
       get("example1", Bins("one", "two")).run must havePairs(("one", 1), ("two", 2))
+
+      // The following test are check to ensure the fix of issue #3
+      put("tweetid2", Bin("text", Option("foo"))).run must beEqualTo(())
+      get("tweetid2", "text").run must beSome("foo")
+
+      put("tweetid3", Bin("text", "foo"), Bin("place", "bar")).run must beEqualTo(())
+      get("tweetid3", "text").run must beSome("foo")
+      get("tweetid3", "place").run must beSome("bar")
+
+      put("tweetid4", Bin("text", Option("foo")), Bin("place", Option("bar"))).run must beEqualTo(())
+      get("tweetid4", "text").run must beSome("foo")
+      get("tweetid4", "place").run must beSome("bar")
+
+      put("tweetid5", Bin("text", "foo"), Bin("place", Option("bar"))).run must beEqualTo(())
+      get("tweetid5", "text").run must beSome("foo")
+      get("tweetid5", "place").run must beSome("bar")
     }
 
     "get(<key name>)" >> {

@@ -102,11 +102,6 @@ sonatypeSettings
 
 releaseSettings
 
-def releaseStepCross[A](key: TaskKey[A]) = ReleaseStep(
-  action = state => Project.extract(state).runTask(key, state)._1,
-  enableCrossBuild = true
-)
-
 ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
@@ -115,10 +110,8 @@ ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  releaseStepCross(PgpKeys.publishSigned),
   setNextVersion,
   commitNextVersion,
-  releaseStepCross(SonatypeKeys.sonatypeReleaseAll),
   pushChanges
 )
 

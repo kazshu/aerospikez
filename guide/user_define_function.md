@@ -7,8 +7,8 @@ A UDF is register via client instance (so we can use from different Set):
 // register(<source-file>, <path>, <language>)  where <path> and <language>
 // are optional; "udf/" as default path and "LUA" as default language
 
-client.register("record_example.lua")
-client.register("stream_example.lua")
+client.register("record_example.lua").run
+client.register("stream_example.lua").run
 ```
 
 `$ cat record_example.lua`

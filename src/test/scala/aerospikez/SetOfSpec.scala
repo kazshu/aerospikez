@@ -15,8 +15,8 @@ class SetOfSpec extends Specification with MapMatchers {
   def afterTests = client.close
 
   val client = AerospikeClient()
-  client.register("record_example.lua", "src/test/resources/udf")
-  client.register("sum_example.lua", "src/test/resources/udf")
+  client.register("record_example.lua", "src/test/resources/udf").run
+  client.register("sum_example.lua", "src/test/resources/udf").run
 
   val set = client.setOf(Namespace("test"), name = "set")
 

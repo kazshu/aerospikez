@@ -10,7 +10,7 @@ Built against:
 - Scalaz 7.1.0-M6
 - Scalaz Stream 0.4.1a
 
-Integration test against Aerospike Server 3.3.5
+Integration test against Aerospike Server 3.3.9
 
 ## Installation
 

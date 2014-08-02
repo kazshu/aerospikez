@@ -1,24 +1,19 @@
-/*******************************************************************************
- * Copyright 2012-2014 by Aerospike.
+/* 
+ * Copyright 2012-2014 Aerospike, Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Portions may be licensed to Aerospike, Inc. under one or more contributor
+ * license agreements.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.aerospike.client.command;
 
 import java.util.ArrayList;
@@ -26,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
@@ -37,6 +33,7 @@ import com.aerospike.client.policy.Policy;
 public final class BatchExecutor {
 	
 	private final ArrayList<BatchThread> threads;
+	private final AtomicInteger completedCount;
 	private volatile Exception exception;
 	private boolean completed;
 	
@@ -50,6 +47,7 @@ public final class BatchExecutor {
 		int readAttr
 	) throws AerospikeException {
 		
+		completedCount = new AtomicInteger();
 		List<BatchNode> batchNodes = BatchNode.generateList(cluster, keys);
 		HashMap<Key,BatchItem> keyMap = BatchItem.generateMap(keys);
 		
@@ -91,15 +89,10 @@ public final class BatchExecutor {
 	}
 	
 	private void threadCompleted() {
-		// Check status of other threads.
-		for (BatchThread thread : threads) {
-			if (! thread.complete) {
-				// Some threads have not finished. Do nothing.
-				return;
-			}
+		// Check if all threads completed.
+		if (completedCount.incrementAndGet() >= threads.size()) {
+			notifyCompleted();
 		}
-		// All threads complete.
-		notifyCompleted();
 	}
 
 	private void stopThreads(Exception cause) {
@@ -138,7 +131,6 @@ public final class BatchExecutor {
 	private final class BatchThread implements Runnable {
 		private MultiCommand command;
 		private Thread thread;
-		private volatile boolean complete;
 
 		public BatchThread(MultiCommand command) {
 			this.command = command;
@@ -156,7 +148,6 @@ public final class BatchExecutor {
 				// Terminate other threads.
 				stopThreads(e);
 			}
-			complete = true;
 			
 		   	if (exception == null) {
 				threadCompleted();

@@ -1,24 +1,19 @@
-/*******************************************************************************
- * Copyright 2012-2014 by Aerospike.
+/* 
+ * Copyright 2012-2014 Aerospike, Inc.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Portions may be licensed to Aerospike, Inc. under one or more contributor
+ * license agreements.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- * IN THE SOFTWARE.
- ******************************************************************************/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.aerospike.client.util;
 
 import gnu.crypto.util.Base64;
@@ -30,6 +25,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import com.aerospike.client.AerospikeException;
 
@@ -84,5 +82,39 @@ public final class Util {
 		catch (Exception e) {
 			throw new AerospikeException("Failed to read " + path, e);
 		}
+	}
+	
+	/**
+	 * Convert a string to a time stamp using the same algorithm as the Aerospike loader.
+	 */
+	public static long toTimeStamp(String dateTime, SimpleDateFormat format, int timeZoneOffset) throws ParseException {
+		Date formatDate = format.parse(dateTime);
+		long miliSecondForDate = formatDate.getTime()
+				- timeZoneOffset;
+		return miliSecondForDate / 1000;		
+	}
+	
+	/**
+	 * Convert a string to a time stamp using a string pattern.
+	 */
+	public static long toTimeStamp(String dateTime, String pattern, int timeZoneOffset) throws ParseException {
+		SimpleDateFormat format = new SimpleDateFormat(pattern);
+		return toTimeStamp(dateTime, format, timeZoneOffset);
+	}
+	
+	/**
+	 * Convert a time stamp (time in milliseconds) to a string.
+	 */
+	public static String fromTimeStamp(long timeStamp, SimpleDateFormat format){
+		Date formatDate = new Date(timeStamp);
+		return format.format(formatDate);
+	}
+	
+	/**
+	 * Convert a time stamp (time in milliseconds) to a string using a string pattern.
+	 */
+	public static String fromTimeStamp(long timeStamp, String pattern){
+		SimpleDateFormat format = new SimpleDateFormat(pattern);
+		return fromTimeStamp(timeStamp, format);
 	}
 }

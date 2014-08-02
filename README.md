@@ -48,7 +48,7 @@ Also the philosophy:
 - Avoid configurations in the code that you write, but instead relies upon their presence of an configuration file (see this [reference.conf](https://github.com/otrimegistro/aerospikez/blob/master/src/test/resources/reference.conf)).
 - Concise & easily usable, i.e not take care about to creating a Key/Bin/Policy/Statement, etc that main result in boilerplate code.
 
-## What can you do? quick example of data analytics
+## What can you do? example of data analytics
 
 I will use the [flights-analytics](https://github.com/aerospike/flights-analytics) example (please see
 the readme to get the idea).
@@ -67,7 +67,7 @@ val format = new java.text.SimpleDateFormat("yyyy/MM/dd")
 val sdf = new java.text.SimpleDateFormat("yyyy-MM-dd")
 val startDate = sdf.parse("2012-01-15").getTime/1000
 val endDate = sdf.parse("2012-01-15").getTime/1000
-val path = "/home/otrimegistro/flights-analytics/"      // CHANGE THIS WHERE THE REPO WAS CLONE
+val path = "/home/otrimegistro/flights-analytics/" // CHANGE THIS WHERE THE REPO WAS CLONE
 
 val preparation = client.register("simple_aggregation.lua", path + "udf").map(_ =>
   (new java.io.File(path + "data")).listFiles.map(file =>

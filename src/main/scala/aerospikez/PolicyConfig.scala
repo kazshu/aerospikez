@@ -20,7 +20,7 @@ object ClientConfig {
     asyncSelectorThreads: Int = 1,
     asyncSelectorTimeout: Int = 0,
     sharedThreadPool: Boolean = false,
-    failIfNotConnected: Boolean = false,
+    failIfNotConnected: Boolean = true,
     asyncMaxCommandAction: MaxCommandAction = MaxCommandAction.REJECT): ClientConfig = {
 
     trySome(ConfigFile.file.getConfig("aerospike.client-policy")).map(c ⇒

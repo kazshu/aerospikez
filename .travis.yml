@@ -15,7 +15,7 @@ before_script:
   - sudo /etc/init.d/aerospike status
 
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION test
+  - sbt ++$TRAVIS_SCALA_VERSION coveralls
 
 after_script:
   - sudo /etc/init.d/aerospike stop
@@ -39,6 +39,10 @@ env:
     - secure: |-
         N95FSLeL3VigFEsPa3CiOCnLT3AmQHBR72LoVyFPsv3Czyvds5s1+pHD5nwCq4XF8vbHfMY0h+Ljnf7cjbNeHf
         w7atcKqE5ma67exxDIEann2by145SCFzkLG73Gl4AAHNrogoMM8xKo9CRTa2BSD4Pr8qBhKljy+3hgPo3tSNU=
+    - secure: |-
+        TcMsGVyaWH3ux+Vem7Qf+kznx1FT1J9xk4FIRMZN0i52FALBhVxs/oDt8kj3nkHkgWyqK3cxQXgtRWEyGbAGeP7
+        tfzNQXeqkkZXu8YC4YThnRo35VJ+65ymbhzSdHgxygjjnQeh4QP8PcSxJyFXQT03v5glla5l7PlbpM1zH7Dc=
+
 
 before_install:
   - V="3.3.9"

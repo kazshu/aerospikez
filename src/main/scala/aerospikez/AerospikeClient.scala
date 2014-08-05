@@ -47,7 +47,7 @@ private[aerospikez] class AerospikeClient(hosts: NonEmptyList[String], clientCon
   def setOf[V](namespace: Namespace, name: String)(
     implicit ev1: V DefaultTypeTo Any, ev2: VRestriction[V]): SetOf[V] = {
 
-    new SetOf[V](namespace, name, this.asyncClient, generalPolicy)
+    new SetOf[V](namespace, name, asyncClient, generalPolicy)
   }
 
   def register(name: String, path: String = "udf", language: String = "LUA"): Task[Unit] = {

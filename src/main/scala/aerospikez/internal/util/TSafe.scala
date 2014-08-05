@@ -46,11 +46,12 @@ private[aerospikez] object TSafe {
 
   @annotation.implicitNotFound(
     msg = """
-    Aerospike support only Long, String, Map and List as Lua Type Result, but you provide a ${LuaV}:
+    Aerospike support only Int, Long, String, Map and List as Lua Type Result, but you provide a ${LuaV}:
     """
   )
   sealed class LRestriction[LuaV]
   object LRestriction {
+    implicit object int extends LRestriction[Int]
     implicit object long extends LRestriction[Long]
     implicit object string extends LRestriction[String]
     implicit def list[A]: LRestriction[List[A]] = new LRestriction[List[A]]

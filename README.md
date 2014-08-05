@@ -20,6 +20,7 @@ libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.1"
 ### Snapshot Version
 
 [![Build Status](https://secure.travis-ci.org/otrimegistro/aerospikez.png)](http://travis-ci.org/otrimegistro/aerospikez)
+[![Coverage Status](https://coveralls.io/repos/otrimegistro/aerospikez/badge.png?branch=master)](https://coveralls.io/r/otrimegistro/aerospikez?branch=master)
 [![Stories in Ready](https://badge.waffle.io/otrimegistro/aerospikez.png?label=Ready)](https://waffle.io/otrimegistro/aerospikez)
 
 ```scala

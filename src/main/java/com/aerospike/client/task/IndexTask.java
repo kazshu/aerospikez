@@ -51,6 +51,7 @@ public final class IndexTask extends Task {
 	 */
 	@Override
 	public boolean isDone() throws AerospikeException {
+    if(cluster == null) return true;
 		String command = "sindex/" + namespace + '/' + indexName;
 		Node[] nodes = cluster.getNodes();
 		boolean complete = false;

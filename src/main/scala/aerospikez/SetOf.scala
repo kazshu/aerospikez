@@ -483,13 +483,14 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
         generalPolicy, createStmt(filter), packageName, functionName, functionArgs.map(parseValue(_)): _*
       )
 
-      while (!t.isDone) Util.sleep(150)
+      while (!t.isDone) Util.sleep(500)
     }
   }
 
-  def query[V](filter: AFilter): Process[Task, Map[String, V]] = {
+  def query[V](filter: AFilter)(
+    implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Process[Task, Map[String, V]] = {
 
-    io.resource(
+    val q: Process[Task, Map[String, V]] = io.resource(
       Task.delay(
         client.query(queryPolicy, createStmt(filter))
       )
@@ -501,12 +502,14 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
             throw Process.End
         }
       }
+
+    Process.eval { Task.suspend { q.toTask } }
   }
 
   def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
     implicit ev1: LuaR DefaultTypeTo Empty, ev2: LuaR =!= Empty, ev3: LRestriction[LuaR]): Process[Task, LuaR] = {
 
-    io.resource(Task.delay(
+    val qA: Process[Task, LuaR] = io.resource(Task.delay(
       client.queryAggregate(
         queryPolicy,
         createStmt(filter),
@@ -518,16 +521,18 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
       Task.delay {
         if (rs.next)
           (rs.getObject match {
+            case r: java.util.HashMap[_, _] ⇒
+              r.toMapWithNotNull
             case r: java.util.ArrayList[_] ⇒
               r.asScala.toList
-            case r: java.util.HashMap[_, _] ⇒
-              r.asScala.toMap
             case other ⇒ other
           }).asInstanceOf[LuaR]
         else
           throw Process.End
       }
     }
+
+    Process.eval { Task.suspend { qA.toTask } }
   }
 
   def createIndex[I](indexName: String, binName: String)(
@@ -541,7 +546,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
         }
       )
 
-      while (!t.isDone) Util.sleep(150)
+      while (!t.isDone) Util.sleep(500)
     }
   }
 

@@ -21,7 +21,12 @@ private[aerospikez] object Pimp {
       while (iterator.hasNext) {
         val entry: ju.Map.Entry[K, V] = iterator.next()
         val value = entry.getValue
-        if (value != null) b += ((entry.getKey, value))
+        if (value != null) b += ((
+          entry.getKey, (value match {
+            case v: ju.HashMap[_, _] ⇒
+              v.toMapWithNotNull
+            case other ⇒ other
+          }).asInstanceOf[V]))
       }
       b.result
     }

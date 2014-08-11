@@ -75,7 +75,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
       client.put(
         writePolicy,
         new WriteListener {
-          def onSuccess(key: Key): Unit = register(\/-())
+          def onSuccess(key: Key): Unit = register(\/-(()))
           def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
         },
         parseKey[K](key),
@@ -91,7 +91,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
       client.put(
         writePolicy,
         new WriteListener {
-          def onSuccess(key: Key): Unit = register(\/-())
+          def onSuccess(key: Key): Unit = register(\/-(()))
           def onFailure(ae: AerospikeException): Unit = register(-\/(ae))
         },
         parseKey[K](key),
@@ -287,7 +287,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
         writePolicy,
         new DeleteListener {
           def onSuccess(key: Key, existed: Boolean): Unit =
-            register(\/-())
+            register(\/-(()))
           def onFailure(ae: AerospikeException): Unit =
             register(-\/(ae))
         },
@@ -303,7 +303,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
         writePolicy,
         new WriteListener {
           def onSuccess(key: Key): Unit =
-            register(\/-())
+            register(\/-(()))
           def onFailure(ae: AerospikeException): Unit =
             register(-\/(ae))
         },

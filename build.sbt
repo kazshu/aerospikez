@@ -39,15 +39,15 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val scalazV = "7.1.0-M6"
+  val scalazV = "7.1.0"
   Seq(
     "org.scalaz"        %% "scalaz-core"        % scalazV,
     "org.scalaz"        %% "scalaz-concurrent"  % scalazV,
-    "org.scalaz.stream" %% "scalaz-stream"      % "0.4.1a",
+    "org.scalaz.stream" %% "scalaz-stream"      % "0.5a",
     "com.typesafe"      %  "config"             % "1.2.1",
     "org.gnu"           %  "gnu-crypto"         % "2.0.1",
-    "org.luaj"          %  "luaj-jse"           % "3.0-beta2",
-    "org.specs2"        %% "specs2"             % "2.3.12-scalaz-7.1.0-M6"  % "test"
+    "org.luaj"          %  "luaj-jse"           % "3.0",
+    "org.specs2"        %% "specs2"             % "2.4" % "test"
   )
 }
 
@@ -56,6 +56,8 @@ libraryDependencies ++= {
 offline := true
 
 scalaVersion := "2.10.4"
+
+crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 compileOrder := CompileOrder.JavaThenScala
 
@@ -106,6 +108,11 @@ sonatypeSettings
 
 releaseSettings
 
+def releaseStepCross[A](key: TaskKey[A]) = ReleaseStep(
+  action = state => Project.extract(state).runTask(key, state)._1,
+  enableCrossBuild = true
+)
+
 ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
@@ -114,8 +121,10 @@ ReleaseKeys.releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
+  releaseStepCross(PgpKeys.publishSigned),
   setNextVersion,
   commitNextVersion,
+  releaseStepCross(SonatypeKeys.sonatypeReleaseAll),
   pushChanges
 )
 

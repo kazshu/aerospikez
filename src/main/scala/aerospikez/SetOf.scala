@@ -17,7 +17,7 @@ import scala.collection.mutable.{ Map ⇒ _ }
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 
-import scalaz.stream.{ Process, io }
+import scalaz.stream.{ Process, Cause, io }
 import scalaz.concurrent.Task
 import scalaz.{ -\/, \/- }
 
@@ -499,7 +499,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
           if (rs.next)
             rs.getRecord.bins.toMapWithNotNull.asInstanceOf[Map[String, V]]
           else
-            throw Process.End
+            throw Cause.Terminated(Cause.End)
         }
       }
 
@@ -528,7 +528,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
             case other ⇒ other
           }).asInstanceOf[LuaR]
         else
-          throw Process.End
+          throw Cause.Terminated(Cause.End)
       }
     }
 

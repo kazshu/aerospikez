@@ -73,10 +73,6 @@ scalacOptions ++= Seq(
   "-language:implicitConversions"
 )
 
-ScoverageSbtPlugin.instrumentSettings
-
-CoverallsPlugin.coverallsSettings
-
 scalariformSettings
 
 ScalariformKeys.preferences := ScalariformKeys.preferences.value

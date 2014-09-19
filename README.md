@@ -14,7 +14,7 @@ A fast, asynchronous, composable and type safe Scala client for [Aerospike](http
 
 | Release Version | Scala compatible| Scalaz-Stream compatible | More Info         |
 |-----------------|-----------------|--------------------------|-------------------|
-| 0.2             | 2.10/2.11       | 0.5a                     | [notes](https://github.com/otrimegistro/aerospikez/blob/master/notes/0.2.md) / [guide](https://github.com/otrimegistro/aerospikez#documentation) |
+| 0.2             | 2.10/2.11       | 0.5a                     | [notes](https://github.com/otrimegistro/aerospikez/blob/master/notes/0.2.md) / [guide](https://github.com/otrimegistro/aerospikez#guide) |
 | 0.1             | 2.10            | 0.4.1a                   | [notes](https://github.com/otrimegistro/aerospikez/blob/master/notes/0.1.md) / [guide](https://github.com/otrimegistro/aerospikez/tree/v0.1#guide) |
 
 ```scala
@@ -110,7 +110,7 @@ scala> result(2)
 res3: Map[String,Map[String,Long]] = Map(US -> Map(percent -> 38, late -> 96, flights -> 248), OO -> Map(percent -> 22, late -> 45, flights -> 204), B6 -> Map(percent -> 18, late -> 27, flights -> 144), AA -> Map(percent -> 33, late -> 104, flights -> 314), YV -> Map(percent -> 26, late -> 11, flights -> 41), EV -> Map(percent -> 17, late -> 45, flights -> 252), UA -> Map(percent -> 41, late -> 39, flights -> 94), MQ -> Map(percent -> 20, late -> 34, flights -> 170), VX -> Map(percent -> 6, late -> 2, flights -> 30), HA -> Map(percent -> 0, late -> 0, flights -> 21))
 ```
 
-## Documentation
+## Guide
 
 - [Before Start](guide/before_start.md)
 - [Cluster Connection Management](guide/connection_management.md)

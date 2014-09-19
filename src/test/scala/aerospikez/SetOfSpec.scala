@@ -317,14 +317,14 @@ class SetOfSpec extends Specification with MapMatchers {
       put("person1", Bin("name", "Bob"), Bin("age", 27)).run
       put("person2", Bin("name", "Ana"), Bin("age", 24)).run
 
-      query(
+      createIndex[String]("index2", "name").flatMap(_ ⇒ query(
         Filter.equal("name", "Bob")
-      ).runLog.run must contain((m: Map[String, Any]) ⇒
-          m must havePairs(
-            ("name", "Bob"),
-            ("age" -> 27)
-          )
+      ).runLog).run must contain((m: Map[String, Any]) ⇒
+        m must havePairs(
+          ("name", "Bob"),
+          ("age" -> 27)
         )
+      )
 
       query(
         Filter.equal("name", "Ana")
@@ -339,9 +339,10 @@ class SetOfSpec extends Specification with MapMatchers {
     "queryAggregate[T](<a Filter>, <package name>, <function name>, <function arguments>)" >> {
       put("one", Bin("num", 1)).run
       put("two", Bin("num", 2)).run
-      queryAggregate[Long](
+
+      createIndex[Int]("index1", "num").flatMap(_ ⇒ queryAggregate[Long](
         Filter.range("num", 1, 3), "sum_example", "sum_single_bin", "num"
-      ).runLog.run must contain(3)
+      ).runLog).run must contain(3)
     }
 
     "dropIndex(<index name>)" >> {

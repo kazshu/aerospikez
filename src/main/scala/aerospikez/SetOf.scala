@@ -490,7 +490,7 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
   def query[V](filter: AFilter)(
     implicit ev1: V DefaultTypeTo SetV, ev2: VRestriction[V]): Process[Task, Map[String, V]] = {
 
-    val q: Process[Task, Map[String, V]] = io.resource(
+    io.resource(
       Task.delay(
         client.query(queryPolicy, createStmt(filter))
       )
@@ -501,15 +501,13 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
           else
             throw Cause.Terminated(Cause.End)
         }
-      }
-
-    Process.eval { Task.suspend { q.toTask } }
+    }
   }
 
   def queryAggregate[LuaR](filter: AFilter, packageName: String, functionName: String, functionArgs: Any*)(
     implicit ev1: LuaR DefaultTypeTo Empty, ev2: LuaR =!= Empty, ev3: LRestriction[LuaR]): Process[Task, LuaR] = {
 
-    val qA: Process[Task, LuaR] = io.resource(Task.delay(
+    io.resource(Task.delay(
       client.queryAggregate(
         queryPolicy,
         createStmt(filter),
@@ -531,8 +529,6 @@ private[aerospikez] class SetOf[@specialized(Int, Long) SetV](
           throw Cause.Terminated(Cause.End)
       }
     }
-
-    Process.eval { Task.suspend { qA.toTask } }
   }
 
   def createIndex[I](indexName: String, binName: String)(

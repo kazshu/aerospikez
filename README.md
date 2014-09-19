@@ -1,27 +1,29 @@
 # aerospikez - Aerospike v3 Scala Client
 
-aerospikez is a fast, asynchronous, concise, composable and type safe Scala Client for [Aerospike](http://www.aerospike.com/) v3.
+A fast, asynchronous, composable and type safe Scala client for [Aerospike](http://www.aerospike.com/) v3.
+
+### Key Points
+
+- Wrapper over java library, to take advantage from Scalaz Stream.
+- Type safe, Aerospike support only some types, so the compiler will check this for us.
+- Idiomatic Scala as possible, e.g. avoid dealing with nulls, instead Scala's Option type is used.
+- Avoid database configurations in the code that you write, this will relies in an file (see this [reference.conf](https://github.com/otrimegistro/aerospikez/blob/master/src/test/resources/reference.conf)).
+- Concise & Usable, i.e not take care about creating a Key/Bin/Policy/Statement, etc that main result in boilerplate code.
 
 ## Installation
 
-### Release Version
-
-[Build](https://travis-ci.org/otrimegistro/aerospikez/builds/31360577) against:
-- Scala 2.10.4
-- Scalaz 7.1.0-M6
-- Scalaz Stream 0.4.1a
+| Release Version | Scala compatible| Scalaz-Stream compatible | More Info         |
+|-----------------|-----------------|--------------------------|-------------------|
+| 0.2             | 2.10/2.11       | 0.5a                     | [notes](https://github.com/otrimegistro/aerospikez/blob/master/notes/0.2.md) / [guide](https://github.com/otrimegistro/aerospikez#documentation) |
+| 0.1             | 2.10            | 0.4.1a                   | [notes](https://github.com/otrimegistro/aerospikez/blob/master/notes/0.1.md) / [guide](https://github.com/otrimegistro/aerospikez/tree/v0.1#guide) |
 
 ```scala
 resolvers += "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 
-libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.1"
+libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "release-version"
 ```
 
-### Snapshot Version
-
-[![Build Status](https://secure.travis-ci.org/otrimegistro/aerospikez.png)](http://travis-ci.org/otrimegistro/aerospikez)
-[![Coverage Status](https://coveralls.io/repos/otrimegistro/aerospikez/badge.png?branch=master)](https://coveralls.io/r/otrimegistro/aerospikez?branch=master)
-[![Stories in Ready](https://badge.waffle.io/otrimegistro/aerospikez.png?label=Ready)](https://waffle.io/otrimegistro/aerospikez)
+##### Snapshot Version [![Build Status](https://secure.travis-ci.org/otrimegistro/aerospikez.png)](http://travis-ci.org/otrimegistro/aerospikez) [![Coverage Status](https://coveralls.io/repos/otrimegistro/aerospikez/badge.png?branch=master)](https://coveralls.io/r/otrimegistro/aerospikez?branch=master) [![Stories in Ready](https://badge.waffle.io/otrimegistro/aerospikez.png?label=Ready)](https://waffle.io/otrimegistro/aerospikez)
 
 ```scala
 resolvers ++= Seq(
@@ -29,46 +31,28 @@ resolvers ++= Seq(
   "Scalaz Bintray Repo"    at "http://dl.bintray.com/scalaz/releases"
 )
 
-libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.2-SNAPSHOT"
+libraryDependencies += "com.github.otrimegistro" %% "aerospikez" % "0.3-SNAPSHOT"
 ```
 
-## Library Design & Philosophy
+## What can you do?
 
-This is a wrapper over the aerospike java client, which tries to take advantage from Scalaz & Scalaz Stream
-for convenience reasons:
-- asynchronous operations in a exception-safe way.
-- perform operations with execution control.
-- implement/execute parallel operations.
-- guarantee about resource safety.
-- write composable computations.
-
-Also the philosophy:
-- Type safe, Aerospike support only some types, so the compiler will check this for us.
-- Idiomatic Scala as possible, e.g. avoid dealing with nulls, instead Scala's Option type is used.
-- Offer wrapper structures that are also check in compile time to prevent possible runtime exceptions.
-- Avoid configurations in the code that you write, but instead relies upon their presence of an configuration file (see this [reference.conf](https://github.com/otrimegistro/aerospikez/blob/master/src/test/resources/reference.conf)).
-- Concise & easily usable, i.e not take care about to creating a Key/Bin/Policy/Statement, etc that main result in boilerplate code.
-
-## What can you do? example of data analytics
-
-I will use the [flights-analytics](https://github.com/aerospike/flights-analytics) example (please see
-the readme to get the idea).
+To give an example we can use the [flights-analytics](https://github.com/aerospike/flights-analytics) (see the readme to get a basic idea):
 
 - Clone the repo (we need only the udf and data):
 `git clone https://github.com/aerospike/flights-analytics`
 
-- In `sbt console` copy this in the `:paste` mode (but wait, change the `path` value!):
+- In `sbt console` copy this code in the `:paste` mode (but wait, change the `path` value!):
 ```scala
 import aerospikez.{ AerospikeClient, Namespace, Filter, Bin }
 import scalaz.stream.io
 
 val client = AerospikeClient()
-val flight = client.setOf(Namespace(), "flights")
+val flight = client.setOf(Namespace("test"), "flights")
 val format = new java.text.SimpleDateFormat("yyyy/MM/dd")
 val sdf = new java.text.SimpleDateFormat("yyyy-MM-dd")
 val startDate = sdf.parse("2012-01-15").getTime/1000
 val endDate = sdf.parse("2012-01-15").getTime/1000
-val path = "/home/otrimegistro/flights-analytics/" // CHANGE THIS WHERE THE REPO WAS CLONE
+val path = "/home/otrimegistro/flights-analytics/" // Change this where the repo was clone
 
 val preparation = client.register("simple_aggregation.lua", path + "udf").map(_ =>
   (new java.io.File(path + "data")).listFiles.map(file =>
@@ -92,22 +76,38 @@ val preparation = client.register("simple_aggregation.lua", path + "udf").map(_ 
         Bin("ELAPSED_TIME", a(16).trim.toInt),
         Bin("AIR_TIME", a(17).trim.toInt),
         Bin("DISTANCE", a(18).trim.toInt))
-    ).drain.run.run
+    ).drain.run.runAsync(_ => ())
 )).flatMap(_  => flight.createIndex[Int]("flight_date", "FL_DATE"))
 
-val analytics = flight.queryAggregate[Map[String, java.util.HashMap[String,Long]]](
+val analytics = flight.queryAggregate[Map[String, Map[String,Long]]](
   Filter.range("FL_DATE", startDate, endDate), "simple_aggregation", "late_flights_by_airline"
 )
 ```
-- Now is time to register the udf, load the data (about 104 mb, so this will take some time) and create the secondary index:
+
+- Now this will register the udf, create the secondary index and loading the data. This 3 step
+are compose to ensure the requeriment of processing:
 ```scala
-scala> preparation.attemptRun
-// res0: scalaz.\/[Throwable,Unit] = \/-(())
+scala> preparation.runAsync(_ => println("Done!, the data is loading ..."))
 ```
-- Finally get the analytics:
+
+- The previous task, simulate a flow of incomming data into your system, wich we can analyze in realtime:
 ```scala
-scala> analytics.runLog.run
-// res1: scala.collection.immutable.IndexedSeq[Map[String,java.util.HashMap[String,Long]]] = Vector(Map(DL -> {percent=26, late=838, flights=3188}, F9 -> {percent=45, late=194, flights=426}, US -> {percent=21, late=482, flights=2200}, OO -> {percent=19, late=604, flights=3100}, B6 -> {percent=17, late=303, flights=1779}, AA -> {percent=31, late=1334, flights=4200}, YV -> {percent=20, late=160, flights=776}, EV -> {percent=20, late=686, flights=3384}, FL -> {percent=16, late=200, flights=1222}, UA -> {percent=36, late=966, flights=2654}, MQ -> {percent=20, late=490, flights=2362}, WN -> {percent=22, late=1234, flights=5376}, AS -> {percent=18, late=192, flights=1041}, VX -> {percent=33, late=88, flights=260}, HA -> {percent=2, late=10, flights=378}))
+scala> analytics.runLog.runAsync(println)
+\/-(Vector(Map(OO -> Map(percent -> 22, late -> 20, flights -> 87), B6 -> Map(percent -> 18, late -> 27, flights -> 144), AA -> Map(percent -> 36, late -> 48, flights -> 131), YV -> Map(percent -> 26, late -> 11, flights -> 41), EV -> Map(percent -> 18, late -> 21, flights -> 115), UA -> Map(percent -> 46, late -> 23, flights -> 49), MQ -> Map(percent -> 22, late -> 17, flights -> 75), VX -> Map(percent -> 6, late -> 2, flights -> 30), HA -> Map(percent -> 0, late -> 0, flights -> 10)))
+```
+
+- Also we can consume repetitively, to manage each/time result against more data are arrive:
+```scala
+scala> val result = analytics.repeat.take(3).runLog.run
+// ...
+scala> result(0)
+res1: Map[String,Map[String,Long]] = Map(US -> Map(percent -> 36, late -> 58, flights -> 159), OO -> Map(percent -> 22, late -> 40, flights -> 174), B6 -> Map(percent -> 18, late -> 27, flights -> 144), AA -> Map(percent -> 32, late -> 88, flights -> 268), YV -> Map(percent -> 26, late -> 11, flights -> 41), EV -> Map(percent -> 15, late -> 35, flights -> 220), UA -> Map(percent -> 40, late -> 34, flights -> 83), MQ -> Map(percent -> 22, late -> 34, flights -> 153), VX -> Map(percent -> 6, late -> 2, flights -> 30), HA -> Map(percent -> 0, late -> 0, flights -> 19))
+
+scala> result(1)
+res2: Map[String,Map[String,Long]] = Map(US -> Map(percent -> 38, late -> 83, flights -> 214), OO -> Map(percent -> 23, late -> 45, flights -> 193), B6 -> Map(percent -> 18, late -> 27, flights -> 144), AA -> Map(percent -> 34, late -> 102, flights -> 299), YV -> Map(percent -> 26, late -> 11, flights -> 41), EV -> Map(percent -> 17, late -> 41, flights -> 239), UA -> Map(percent -> 41, late -> 36, flights -> 87), MQ -> Map(percent -> 20, late -> 34, flights -> 164), VX -> Map(percent -> 6, late -> 2, flights -> 30), HA -> Map(percent -> 0, late -> 0, flights -> 20))
+
+scala> result(2)
+res3: Map[String,Map[String,Long]] = Map(US -> Map(percent -> 38, late -> 96, flights -> 248), OO -> Map(percent -> 22, late -> 45, flights -> 204), B6 -> Map(percent -> 18, late -> 27, flights -> 144), AA -> Map(percent -> 33, late -> 104, flights -> 314), YV -> Map(percent -> 26, late -> 11, flights -> 41), EV -> Map(percent -> 17, late -> 45, flights -> 252), UA -> Map(percent -> 41, late -> 39, flights -> 94), MQ -> Map(percent -> 20, late -> 34, flights -> 170), VX -> Map(percent -> 6, late -> 2, flights -> 30), HA -> Map(percent -> 0, late -> 0, flights -> 21))
 ```
 
 ## Documentation

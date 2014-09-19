@@ -19,19 +19,6 @@ import aerospikez.Bin
 set.put("example1", Bin("one", 1), Bin("two", 2)).run
 ```
 
-- putG (*put the value and get the old value.*)
-```scala
-// putG(<key name>, <a value>)
-set.putG("name", "Bruce").run                    // None
-set.putG("name", "Chuck").run                    // Some(Bruce)
-
-
-// putG(<key name>, <a value>, <bin name>)
-val user_id = scala.util.Random.nextInt()
-set.putG(user_id, "Bruce", "name").run           // None
-set.putG(user_id, "Bruce Lee", "name").run       // Some(Bruce)
-```
-
 ## Read Record Operations
 
 - get
@@ -47,41 +34,41 @@ set.put(
   id_user,
   Map("full name" -> "Chuck Norris", "age" -> 74),
   "personal info"
-).run
+).run                                            // Unit
 set.get(id_user, "personal info").run            // Some(Map(full name -> Chuck Norris, age -> 74))
 
 
 // get(Keys(<one or more key name>))
 import aerospikez.Keys
 set.put("two", 2).run                            // Unit
-set.get(Keys("one", "two")).run                  // OpenHashMap(two -> 2, one -> 1)
+set.get(Keys("one", "two")).run                  // Map(one -> 1, two -> 2)
 
 // get(Keys(<one or more key name>), <bin name>)
 val user_1 = scala.util.Random.nextInt()
 val user_2 = user_1 + 1
 set.put(user_1, "Bruce Lee", "name").run         // Unit
 set.put(user_2, "Chuck Norris", "name").run      // Unit
-set.get(Keys(user_1, user_2), "name").run        // OpenHashMap(1893 -> Bruce Lee, 1894 -> Chuck Norris)
+set.get(Keys(user_1, user_2), "name").run        // Map(1893 -> Bruce Lee, 1894 -> Chuck Norris)
 
 
 // get(<key name>, Bins(<one or more bin name>))
 import aerospikez.Bins
 set.put("num", 0, "add id").run                  // Unit
 set.put("num", 1, "mult id").run                 // Unit
-set.get("num", Bins("add id", "mult id")).run    // OpenHashMap(mult id -> 1, add id -> 0)
+set.get("num", Bins("add id", "mult id")).run    // Map(add id -> 0, mult id -> 1)
 
 
 // get(Keys(<one or more key name>), Bins(<one or more bin name>))
-set.get(Keys("num"), Bins("add id")).run         // OpenHashMap(num -> OpenHashMap(add identity -> 0))
+set.get(Keys("num"), Bins("add id")).run         // Map(num -> Map(add id -> 0))
 ```
 
 - getHeader
 ```scala
 // getHeader(<key name>)
-set.getHeader("two").run                         // Some(1, 139517791)
+set.getHeader("two").run                         // Some((1,148399023))
 
 // getHeader(Keys(<one or more key name>))
-set.getHeader(Keys("one", "two")).run            // OpenHashMap(two -> Some((1,141756487)), one -> Some((1,139517791)))
+set.getHeader(Keys("one", "two")).run            // Map(one -> (5,148398731), two -> (1,148399023))
 ```
 
 ## Existence Check Operations
@@ -94,17 +81,17 @@ set.exists("three").run                          // false
 
 
 // exists(Keys(<one or more key name>)
-set.exists(Keys("one", "three").run              // OpenHashMap(three -> false, one -> true)
+set.exists(Keys("one", "three")).run             // Map(one -> true, three -> false)
 ```
 
 ## Touch Operations
 
 - touch
 ```scala
-set.getHeader("key").run                         // Some((1,142093244))
+set.getHeader("one").run                         // Some((5,148398731))
 // touch(<key name>)
-set.touch("key").run                             // Unit
-set.getHeader("key").run                         // Some((2,142093306))
+set.touch("one").run                             // Unit
+set.getHeader("one").run                         // Some((6,148399622))
 ```
 
 ## Delete Operations
@@ -149,13 +136,17 @@ set.get("example2").run                          // Some(hello world!)
 
 - operate
 ```scala
-import aerospikez-Operations._
+import aerospikez.Operations._
 
 // operate(<key name>, <one or more operations>)
-set.operate("numbers", put("one", 1), put("two", 2), put("three", 3), get("two")).run            // Some(2)
+set.operate("numbers", put("one", 1), put("two", 2), put("three", 3), get("two")).run
+// Some(2)
 
-set.operate("names", put("agent1", "James"), put("agent2", "Jack")).run                          // Some(())
-set.operate("names", append("agent1", " Bond"), append("agent2", " Bauer"), get("agent1")).run // Some("James Bond")
+set.operate("names", put("agent1", "James"), put("agent2", "Jack")).run
+// Some(())
+
+set.operate("names", append("agent1", " Bond"), append("agent2", " Bauer"), get("agent1")).run
+// Some(James Bond)
 ```
 **Note:** Aerospike support only a write operation in a same bin, this will no check for this library for performance reason:
 ```scala

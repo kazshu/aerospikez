@@ -28,7 +28,7 @@ private[aerospikez] object TSafe {
 
   @annotation.implicitNotFound(
     msg = """
-    Aaerospike support only String, Int, Long, Map and List as Value (or a Option[T] where T is any type described above), but you provide a ${V}:
+    Aaerospike support only String, Int, Long, Array[Byte], Map and List as Value (or a Option[T] where T is any type described above), but you provide a ${V}:
     """
   )
   sealed class VRestriction[V]
@@ -36,6 +36,7 @@ private[aerospikez] object TSafe {
     implicit object int extends VRestriction[Int]
     implicit object long extends VRestriction[Long]
     implicit object string extends VRestriction[String]
+    implicit object arraybyte extends KRestriction[Array[Byte]]
     implicit def list[A: VRestriction]: VRestriction[List[A]] = new VRestriction[List[A]]
     implicit def option[A: VRestriction]: VRestriction[Option[A]] = new VRestriction[Option[A]]
     implicit def map[A: VRestriction, B: VRestriction]: VRestriction[Map[A, B]] = new VRestriction[Map[A, B]]
